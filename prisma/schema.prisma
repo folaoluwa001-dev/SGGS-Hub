@@ -1,0 +1,229 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique // SUPER_ADMIN, TEACHER, BURSAR, PARENT
+  permissions String   // JSON list of permissions
+  users       User[]
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  username           String               @unique
+  passwordHash       String
+  fullName           String
+  roleId             String
+  role               Role                 @relation(fields: [roleId], references: [id])
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  payments           Payment[]
+  tokens             Token[]
+  auditLogs          AuditLog[]
+  sheetSyncLogs      GoogleSheetSyncLog[]
+}
+
+model Student {
+  id                 String    @id // e.g. SGGS-2026-0001
+  admissionNumber    String    @unique
+  fullName           String
+  gender             String
+  dateOfBirth        DateTime
+  address            String
+  parentName         String
+  parentPhone        String
+  parentEmail        String
+  classId            String
+  class              Class     @relation(fields: [classId], references: [id])
+  sessionId          String
+  session            Session   @relation(fields: [sessionId], references: [id])
+  passportPhotograph String?   // Path to image or base64
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  results            Result[]
+  payments           Payment[]
+  tokens             Token[]
+
+  @@index([classId])
+  @@index([sessionId])
+}
+
+model Class {
+  id            String               @id @default(uuid())
+  name          String               @unique // JSS1, JSS2, JSS3, SSS1, SSS2, SSS3
+  level         String               // JUNIOR, SENIOR
+  students      Student[]
+  feeCategories FeeCategory[]
+  sheetSyncLogs GoogleSheetSyncLog[]
+}
+
+model Subject {
+  id            String               @id @default(uuid())
+  name          String               @unique
+  description   String?
+  results       Result[]
+  sheetSyncLogs GoogleSheetSyncLog[]
+}
+
+model Session {
+  id       String    @id @default(uuid())
+  name     String    @unique // e.g. 2025/2026
+  active   Boolean   @default(false)
+  students Student[]
+  results  Result[]
+}
+
+model Term {
+  id      String   @id @default(uuid())
+  name    String   @unique // First Term, Second Term, Third Term
+  active  Boolean  @default(false)
+  results Result[]
+}
+
+model Result {
+  id         String   @id @default(uuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId  String
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  termId     String
+  term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  caScore    Float    // Max 30
+  examScore  Float    // Max 70
+  totalScore Float    // CA + Exam (Max 100)
+  grade      String   // A, B, C, D, E, F
+  remark     String   // Excellent, Very Good, Good, Fair, Pass, Fail
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([studentId, subjectId, termId, sessionId])
+  @@index([studentId])
+  @@index([subjectId])
+  @@index([termId])
+  @@index([sessionId])
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amountPaid     Float
+  totalExpected  Float
+  balance        Float
+  category       String   // Tuition, PTA, ICT, Development Levy, Examination, Other Fees
+  receiptNumber  String   @unique
+  paymentDate    DateTime @default(now())
+  recordedBy     String
+  recordedByUser User     @relation(fields: [recordedBy], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([recordedBy])
+}
+
+model FeeCategory {
+  id            String @id @default(uuid())
+  name          String // Tuition, PTA, etc.
+  defaultAmount Float
+  classId       String
+  class         Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([name, classId])
+}
+
+model Token {
+  id          String          @id @default(uuid())
+  tokenString String          @unique // e.g. ABC123
+  studentId   String
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  maxUsage    Int             @default(3)
+  usageCount  Int             @default(0)
+  status      String          @default("Active") // Active, Expired, Disabled, Consumed
+  generatedBy String
+  user        User            @relation(fields: [generatedBy], references: [id])
+  createdAt   DateTime        @default(now())
+  expiresAt   DateTime
+  logs        TokenUsageLog[]
+
+  @@index([studentId])
+  @@index([generatedBy])
+}
+
+model TokenUsageLog {
+  id          String   @id @default(uuid())
+  tokenId     String
+  token       Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  visitorName String
+  accessTime  DateTime @default(now())
+  ipAddress   String
+  userAgent   String
+
+  @@index([tokenId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String   // Logins, Logouts, Result Access, Token Usage, Student Changes, Payment Changes, Google Sheet Sync Events, Settings Changes
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  details   String
+  ipAddress String
+  userAgent String
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  eventDate   DateTime
+  category    String   // academic, administrative, public
+  createdAt   DateTime @default(now())
+}
+
+model Settings {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
+
+model Backup {
+  id         String   @id @default(uuid())
+  fileName   String
+  fileSize   String
+  backupType String   // Auto, Manual
+  status     String   // Success, Failed
+  createdAt  DateTime @default(now())
+}
+
+model GoogleSheetSyncLog {
+  id            String   @id @default(uuid())
+  teacherId     String
+  teacher       User     @relation(fields: [teacherId], references: [id])
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id])
+  classId       String
+  class         Class    @relation(fields: [classId], references: [id])
+  status        String   // Success, Failed
+  syncTime      DateTime @default(now())
+  recordsSynced Int      @default(0)
+  errorMessage  String?
+
+  @@index([teacherId])
+  @@index([subjectId])
+  @@index([classId])
+}
