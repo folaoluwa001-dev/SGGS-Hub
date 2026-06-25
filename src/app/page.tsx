@@ -96,10 +96,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-3 mb-16">
             <h2 className="text-3xl font-black tracking-tight text-primary dark:text-white">
-              Unified Academic Management
+              Shaping Minds. Building Futures.
             </h2>
             <p className="text-sm sm:text-base text-muted-fg-custom max-w-lg mx-auto">
-              A comprehensive system designed to streamline score recording, parent result reviews, and school finance tracking.
+              Welcome to a community where academic excellence meets character development.
             </p>
           </div>
 
@@ -109,9 +109,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Scores Sync</h3>
+              <h3 className="font-extrabold text-base text-primary dark:text-white">Academic Excellence</h3>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Teachers quickly upload and sync grades using Google Sheets spreadsheets, automatically calculating totals, remarks, and letter grades.
+                From foundational literacy to advanced sciences, we provide students with the knowledge and critical thinking skills needed to thrive in a rapidly changing world.
               </p>
             </div>
 
@@ -120,9 +120,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
                 <CreditCard className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Fee Ledger</h3>
+              <h3 className="font-extrabold text-base text-primary dark:text-white">Latest Announcements</h3>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Bursary staff log student payments, compute expected fees and outstanding debt balances, and issue instantly downloadable receipts.
+                📢 2026/2027 Academic Session — Registration is now open. All new students are advised to complete enrollment online or onsite. Visit the school office or send us a mail to get started.
               </p>
             </div>
 
@@ -131,9 +131,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-accent-light/10 text-accent-light flex items-center justify-center">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Installable PWA</h3>
+              <h3 className="font-extrabold text-base text-primary dark:text-white">Parental Involvement</h3>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Fully compliant Progressive Web App. Install directly on mobile or desktop for fast, native-feeling, and offline-compatible access.
+                We believe great education is a partnership. Parents are warmly encouraged to engage with school activities, attend meetings, and stay connected with their child's academic journey. Together, we raise exceptional children.
               </p>
             </div>
 
@@ -142,9 +142,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Robust Security</h3>
+              <h3 className="font-extrabold text-base text-primary dark:text-white">Student Life</h3>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Armed with Multi-factor TOTP authentication, Role-Based Access Control, rate limiting, and encrypted database backups.
+                Beyond the classroom, our students thrive. From inter-house sports to science fairs, debate competitions to cultural showcases. school life here is rich, vibrant, and purposefully designed to build confident, well-rounded individuals.
               </p>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function Home() {
                 <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">JSS 3</span>
               </div>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Focuses on foundational courses including General Mathematics, English Studies, Civic Education, and Basic Sciences. Prepares students for basic education certificates and secondary transitions.
+                We focus on foundational courses including General Mathematics, English Studies, Civic Education, and Basic Sciences. Preparing our students for basic education certificates and secondary transitions.
               </p>
             </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
                 <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">SSS 3</span>
               </div>
               <p className="text-xs text-muted-fg-custom leading-relaxed">
-                Offers specialized tracks in Science, Arts, and Commercial studies. Courses include Physics, Chemistry, Biology, Economics, Government, and Data Processing, preparing students for university entrance.
+                We offer specialized tracks in Science, Arts, and Commercial studies. Courses include Physics, Chemistry, Biology, Economics, Government, and Data Processing, preparing students for university entrance.
               </p>
             </div>
           </div>
