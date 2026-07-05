@@ -25,10 +25,16 @@ export async function generateTemplateCSV(classId: string): Promise<string> {
     orderBy: { fullName: 'asc' },
   });
 
+  // Separate boys and girls. Since they are already fetched ordered by fullName: 'asc',
+  // both filtered lists will remain sorted alphabetically.
+  const boys = students.filter(s => s.gender.toLowerCase() === 'male');
+  const girls = students.filter(s => s.gender.toLowerCase() === 'female');
+  const sortedStudents = [...boys, ...girls];
+
   let csvContent = '\uFEFF'; // UTF-8 BOM for Excel compatibility
   csvContent += 'Student ID,Student Name,CA Score,Exam Score\n';
 
-  students.forEach((student) => {
+  sortedStudents.forEach((student) => {
     // Escape commas in student names
     const escapedName = student.fullName.includes(',') 
       ? `"${student.fullName}"` 

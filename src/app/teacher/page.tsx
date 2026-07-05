@@ -155,7 +155,7 @@ export default function TeacherDashboard() {
   // Download template triggers
   const downloadTemplate = () => {
     if (!selectedClassId) return;
-    const url = `/api/sync-sheets?classId=${selectedClassId}`;
+    const url = `/api/sync-sheets?classId=${selectedClassId}&subjectId=${selectedSubjectId}`;
     window.open(url, '_blank');
   };
 

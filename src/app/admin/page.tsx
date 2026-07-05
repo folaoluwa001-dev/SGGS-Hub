@@ -274,29 +274,51 @@ export default function AdminDashboard() {
       'Home Address'
     ];
     
-    const activeSession = sessions.find(s => s.active);
-    const sessionExample = activeSession?.name || '2025/2026';
-    const classExample = classes[0]?.name || 'JSS1';
+    // Sort students by admission number in ascending order naturally
+    const sortedStudentsForExport = [...students].sort((a, b) => 
+      String(a.admissionNumber || '').localeCompare(String(b.admissionNumber || ''), undefined, { numeric: true, sensitivity: 'base' })
+    );
 
-    const exampleRow = [
-      'SGGS/2026/1001',
-      'John Doe',
-      'Male',
-      '2012-05-15',
-      classExample,
-      sessionExample,
-      'Robert Doe',
-      '+234 803 111 2222',
-      'parent@example.com',
-      '12, Success Close, Lagos'
-    ];
+    const rows = sortedStudentsForExport.map(s => [
+      s.admissionNumber || '',
+      s.fullName || '',
+      s.gender || '',
+      s.dateOfBirth ? s.dateOfBirth.split('T')[0] : '',
+      s.class?.name || '',
+      s.session?.name || '',
+      s.parentName || '',
+      s.parentPhone || '',
+      s.parentEmail || '',
+      s.address || ''
+    ]);
+
+    // If there are no students registered yet, provide one example row
+    if (rows.length === 0) {
+      const activeSession = sessions.find(s => s.active);
+      const sessionExample = activeSession?.name || '2025/2026';
+      const classExample = classes[0]?.name || 'JSS1';
+      rows.push([
+        'SGGS/2026/1001',
+        'John Doe',
+        'Male',
+        '2012-05-15',
+        classExample,
+        sessionExample,
+        'Robert Doe',
+        '+234 803 111 2222',
+        'parent@example.com',
+        '12, Success Close, Lagos'
+      ]);
+    }
 
     const csvContent = [
       '\uFEFF' + headers.join(','),
-      exampleRow.map(val => {
-        const escaped = String(val).includes(',') ? `"${val}"` : val;
-        return escaped;
-      }).join(',')
+      ...rows.map(row => 
+        row.map(val => {
+          const escaped = String(val).includes(',') ? `"${val}"` : val;
+          return escaped;
+        }).join(',')
+      )
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
