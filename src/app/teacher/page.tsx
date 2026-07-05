@@ -196,6 +196,55 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleDirectResultUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('classId', selectedClassId);
+    formData.append('subjectId', selectedSubjectId);
+    formData.append('termId', selectedTermId);
+    formData.append('sessionId', selectedSessionId);
+
+    setLoading(true);
+    setSyncLogs(null);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch('/api/results/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          setSyncLogs({
+            success: false,
+            recordsSynced: 0,
+            errors: data.errors
+          });
+        } else {
+          throw new Error(data.error || 'Result upload failed');
+        }
+      } else {
+        setSyncLogs({
+          success: true,
+          recordsSynced: data.recordsSynced,
+          errors: []
+        });
+        fetchClassStudents();
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An error occurred during file upload.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Manual Grade submission
   const handleManualGradeSubmit = async (studentId: string) => {
     const scores = gradingScores[studentId];
@@ -290,7 +339,7 @@ export default function TeacherDashboard() {
                 }`}
             >
               <FileSpreadsheet className="w-4 h-4" />
-              <span>Google Sheets Sync</span>
+              <span>Spreadsheet Grade Upload</span>
             </button>
 
             <button
@@ -357,7 +406,7 @@ export default function TeacherDashboard() {
 
           <h2 className="text-sm font-black text-primary dark:text-white uppercase hidden md:block">
             {activeTab === 'overview' && 'Student Directory & class Lists'}
-            {activeTab === 'sync' && 'Google Sheets score Sync'}
+            {activeTab === 'sync' && 'Spreadsheet Grade Upload & Sync'}
             {activeTab === 'manual' && 'Manual Grade book overrides'}
             {activeTab === 'settings' && 'Account Settings'}
           </h2>
@@ -460,11 +509,83 @@ export default function TeacherDashboard() {
                   </button>
                 </div>
 
-                {/* 2. Run sync from Google Sheet card */}
+                {/* 2. Direct Spreadsheet Upload Card */}
                 <div className="p-6 rounded-2xl bg-card-custom border border-border-custom space-y-4">
                   <h3 className="font-extrabold text-sm text-primary dark:text-white flex items-center space-x-2">
                     <Upload className="w-5 h-5 text-accent-light" />
-                    <span>Step 2: Sync Google Sheet URL</span>
+                    <span>Step 2 (Option A): Direct Spreadsheet Upload (.csv, .xlsx, .xls)</span>
+                  </h3>
+                  <p className="text-xs text-muted-fg-custom leading-normal">
+                    Select your grading criteria, then upload your marksheet spreadsheet directly to record scores instantly.
+                  </p>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Class Arm</label>
+                        <select
+                          value={selectedClassId}
+                          onChange={(e) => setSelectedClassId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden"
+                        >
+                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Subject</label>
+                        <select
+                          value={selectedSubjectId}
+                          onChange={(e) => setSelectedSubjectId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden"
+                        >
+                          {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Academic Term</label>
+                        <select
+                          value={selectedTermId}
+                          onChange={(e) => setSelectedTermId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden"
+                        >
+                          {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Session</label>
+                        <select
+                          value={selectedSessionId}
+                          onChange={(e) => setSelectedSessionId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden"
+                        >
+                          {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <label className="flex items-center justify-center space-x-2 w-full px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md cursor-pointer transition-all">
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Spreadsheet file</span>
+                        <input
+                          type="file"
+                          accept=".csv, .xlsx, .xls"
+                          className="hidden"
+                          onChange={handleDirectResultUpload}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Sync from Google Sheet card */}
+                <div className="p-6 rounded-2xl bg-card-custom border border-border-custom space-y-4">
+                  <h3 className="font-extrabold text-sm text-primary dark:text-white flex items-center space-x-2">
+                    <RefreshCw className="w-5 h-5 text-secondary" />
+                    <span>Step 2 (Option B): Sync Google Sheet URL</span>
                   </h3>
                   <p className="text-xs text-muted-fg-custom leading-normal">
                     Configure your spreadsheet share permissions to <b>"Anyone with the link can view"</b>, paste the URL below, choose settings, and trigger the sync database upload.
@@ -559,7 +680,7 @@ export default function TeacherDashboard() {
                     <div className="flex-grow flex flex-col items-center justify-center text-center p-8 text-slate-400 space-y-2">
                       <FileSpreadsheet className="w-8 h-8 opacity-45" />
                       <span className="text-xs font-bold">No active logs to display.</span>
-                      <span className="text-[10px] text-slate-500">Submit a sheet URL in Step 2 to parse records.</span>
+                      <span className="text-[10px] text-slate-500">Submit a sheet URL or upload a file in Step 2 to parse records.</span>
                     </div>
                   ) : (
                     <div className="flex-grow space-y-4">
@@ -568,12 +689,12 @@ export default function TeacherDashboard() {
                         {syncLogs.success ? (
                           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Sync Success</span>
+                            <span>Upload / Sync Success</span>
                           </div>
                         ) : (
                           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-danger/10 text-danger text-xs font-bold">
                             <AlertCircle className="w-3.5 h-3.5" />
-                            <span>Sync Failed</span>
+                            <span>Upload / Sync Failed</span>
                           </div>
                         )}
                         <span className="text-xs font-extrabold">Imported: {syncLogs.recordsSynced} rows</span>
