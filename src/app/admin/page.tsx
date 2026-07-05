@@ -39,6 +39,11 @@ export default function AdminDashboard() {
   // Bulk report state
   const [bulkClassId, setBulkClassId] = useState('');
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkUploadResult, setBulkUploadResult] = useState<{
+    success: boolean;
+    errors: string[];
+    count: number;
+  } | null>(null);
   
   // Modals state
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -252,6 +257,99 @@ export default function AdminDashboard() {
       alert(err.message || 'An error occurred while downloading bulk report cards.');
     } finally {
       setBulkLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'Admission Number',
+      'Full Name',
+      'Gender',
+      'Date of Birth',
+      'Class Name',
+      'Session Name',
+      'Parent Name',
+      'Parent Phone',
+      'Parent Email',
+      'Home Address'
+    ];
+    
+    const activeSession = sessions.find(s => s.active);
+    const sessionExample = activeSession?.name || '2025/2026';
+    const classExample = classes[0]?.name || 'JSS1';
+
+    const exampleRow = [
+      'SGGS/2026/1001',
+      'John Doe',
+      'Male',
+      '2012-05-15',
+      classExample,
+      sessionExample,
+      'Robert Doe',
+      '+234 803 111 2222',
+      'parent@example.com',
+      '12, Success Close, Lagos'
+    ];
+
+    const csvContent = [
+      '\uFEFF' + headers.join(','),
+      exampleRow.map(val => {
+        const escaped = String(val).includes(',') ? `"${val}"` : val;
+        return escaped;
+      }).join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'student_bulk_registration_template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await fetch('/api/students/bulk-upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          setBulkUploadResult({
+            success: false,
+            errors: data.errors,
+            count: 0
+          });
+        } else {
+          throw new Error(data.error || 'Bulk upload failed');
+        }
+      } else {
+        setBulkUploadResult({
+          success: true,
+          errors: [],
+          count: data.count
+        });
+        fetchStudents();
+      }
+    } catch (err: any) {
+      alert(err.message || 'An error occurred during bulk upload');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -788,6 +886,35 @@ export default function AdminDashboard() {
                   <Plus className="w-4 h-4" />
                   <span>Register Student</span>
                 </button>
+              </div>
+
+              {/* Bulk Student Enrollment */}
+              <div className="p-4 rounded-2xl bg-card-custom border border-border-custom flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-1 text-left w-full sm:w-auto">
+                  <h4 className="text-xs font-black uppercase text-primary dark:text-white">Bulk Student Enrollment</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Download spreadsheet template or upload student lists (.csv, .xlsx)</p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom text-fg-custom font-extrabold text-xs shadow-xs transition-all w-full sm:w-auto"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Template</span>
+                  </button>
+
+                  <label className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-secondary text-white hover:bg-amber-600 font-extrabold text-xs shadow-md cursor-pointer transition-all w-full sm:w-auto">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Bulk Upload Students</span>
+                    <input
+                      type="file"
+                      accept=".csv, .xlsx"
+                      className="hidden"
+                      onChange={handleBulkUpload}
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Bulk Report Card Downloader */}
@@ -1477,6 +1604,58 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* BULK UPLOAD RESULT MODAL */}
+      {bulkUploadResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-card-custom border border-border-custom rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6">
+            <h3 className="text-xl font-black text-primary dark:text-white flex items-center gap-2">
+              {bulkUploadResult.success ? (
+                <>
+                  <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                  <span>Bulk Upload Successful</span>
+                </>
+              ) : (
+                <>
+                  <ShieldAlert className="w-6 h-6 text-danger" />
+                  <span>Bulk Upload Validation Errors</span>
+                </>
+              )}
+            </h3>
+
+            {bulkUploadResult.success ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-sm font-semibold">
+                  Successfully imported <strong>{bulkUploadResult.count}</strong> new student records. All fee schedules and outstanding balances have been initialized automatically!
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl bg-danger/10 text-danger text-xs font-semibold border border-danger/20 mb-2">
+                  The spreadsheet contains validation errors. No student records were imported. Please fix the errors listed below and re-upload:
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2 border border-border-custom p-3 rounded-xl bg-bg-custom divide-y divide-border-custom">
+                  {bulkUploadResult.errors.map((err, i) => (
+                    <div key={i} className="text-xs text-muted-fg-custom font-medium pt-2 first:pt-0">
+                      {err}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-border-custom flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setBulkUploadResult(null)}
+                className="px-6 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
