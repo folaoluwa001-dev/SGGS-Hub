@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const { theme, toggleTheme } = useTheme();
   
   // App state
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,6 +44,15 @@ export default function AdminDashboard() {
     errors: string[];
     count: number;
   } | null>(null);
+  
+  // Combined Marksheet state
+  const [selectedClassCategory, setSelectedClassCategory] = useState('');
+  const [selectedMarksheetTermId, setSelectedMarksheetTermId] = useState('');
+  const [selectedMarksheetSessionId, setSelectedMarksheetSessionId] = useState('');
+  const [marksheetLoading, setMarksheetLoading] = useState(false);
+  const [marksheetError, setMarksheetError] = useState<string | null>(null);
+  const [marksheetSuccess, setMarksheetSuccess] = useState<string | null>(null);
+  const [marksheetUploadErrors, setMarksheetUploadErrors] = useState<string[]>([]);
   
   // Modals state
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -141,6 +150,21 @@ export default function AdminDashboard() {
       }
       if (resSess.length > 0) {
         setStudentForm(prev => ({ ...prev, sessionId: resSess[0].id }));
+      }
+
+      // Default marksheet term and session
+      const activeTerm = resTerms.find((t: any) => t.active);
+      if (activeTerm) {
+        setSelectedMarksheetTermId(activeTerm.id);
+      } else if (resTerms.length > 0) {
+        setSelectedMarksheetTermId(resTerms[0].id);
+      }
+
+      const activeSession = resSess.find((s: any) => s.active);
+      if (activeSession) {
+        setSelectedMarksheetSessionId(activeSession.id);
+      } else if (resSess.length > 0) {
+        setSelectedMarksheetSessionId(resSess[0].id);
       }
     } catch (e) {
       console.error(e);
@@ -257,6 +281,102 @@ export default function AdminDashboard() {
       alert(err.message || 'An error occurred while downloading bulk report cards.');
     } finally {
       setBulkLoading(false);
+    }
+  };
+
+  const handleDownloadCombinedMarksheet = async () => {
+    if (!selectedClassCategory) {
+      setMarksheetError('Please select a Class Category.');
+      return;
+    }
+
+    setMarksheetLoading(true);
+    setMarksheetError(null);
+    setMarksheetSuccess(null);
+    setMarksheetUploadErrors([]);
+
+    try {
+      const url = `/api/admin/combined-marksheet?classCategory=${selectedClassCategory}&termId=${selectedMarksheetTermId}&sessionId=${selectedMarksheetSessionId}`;
+      const res = await fetch(url);
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to download marksheet.');
+      }
+
+      const blob = await res.blob();
+      
+      // Get filename from header or build fallback
+      const disposition = res.headers.get('content-disposition');
+      let filename = `${selectedClassCategory}_Marksheet.xlsx`;
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setMarksheetSuccess('Combined marksheet downloaded successfully.');
+    } catch (err: any) {
+      setMarksheetError(err.message || 'An error occurred while exporting.');
+    } finally {
+      setMarksheetLoading(false);
+    }
+  };
+
+  const handleUploadCombinedMarksheet = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = '';
+
+    if (!selectedClassCategory) {
+      setMarksheetError('Please select a Class Category first.');
+      return;
+    }
+
+    setMarksheetLoading(true);
+    setMarksheetError(null);
+    setMarksheetSuccess(null);
+    setMarksheetUploadErrors([]);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('classCategory', selectedClassCategory);
+    formData.append('termId', selectedMarksheetTermId);
+    formData.append('sessionId', selectedMarksheetSessionId);
+
+    try {
+      const res = await fetch('/api/admin/combined-marksheet-upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          setMarksheetUploadErrors(data.errors);
+          throw new Error('Spreadsheet validation failed.');
+        }
+        throw new Error(data.error || 'Failed to upload marksheet.');
+      }
+
+      setMarksheetSuccess(`Marksheet uploaded and synchronized successfully. ${data.updatedCount || 0} records updated, ${data.deletedCount || 0} records deleted.`);
+    } catch (err: any) {
+      setMarksheetError(err.message || 'An error occurred during upload.');
+    } finally {
+      setMarksheetLoading(false);
     }
   };
 
@@ -668,6 +788,18 @@ export default function AdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('marksheet')}
+              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'marksheet'
+                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom'
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              <span>Combined Marksheets</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('audit')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'audit'
@@ -737,6 +869,7 @@ export default function AdminDashboard() {
             {activeTab === 'subjects' && 'Academic Subjects'}
             {activeTab === 'tokens' && 'Result Checker Tokens'}
             {activeTab === 'backups' && 'Database Backup Control'}
+            {activeTab === 'marksheet' && 'Combined Marksheet Control'}
             {activeTab === 'audit' && 'Security Audit Logs'}
             {activeTab === 'settings' && 'Account Settings'}
           </h2>
@@ -1325,6 +1458,129 @@ export default function AdminDashboard() {
               <ChangePasswordForm />
             </div>
           )}
+
+          {/* COMBINED MARKSHEET TAB */}
+          {activeTab === 'marksheet' && (() => {
+            const classCategories = Array.from(
+              new Set(
+                classes.map((c: any) => {
+                  const match = c.name.trim().match(/^(JSS\d|SSS\d)/i);
+                  return match ? match[1].toUpperCase() : c.name.trim();
+                })
+              )
+            ).sort() as string[];
+
+            return (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="p-6 rounded-3xl bg-card-custom border border-border-custom shadow-sm space-y-6">
+                  <div>
+                    <h3 className="text-base font-black text-primary dark:text-white uppercase">Export & Sync Combined Marksheets</h3>
+                    <p className="text-[11px] text-slate-400 font-bold uppercase mt-1">
+                      Select a class category to download a consolidated marksheet or sync changes back.
+                    </p>
+                  </div>
+
+                  {marksheetSuccess && (
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{marksheetSuccess}</span>
+                    </div>
+                  )}
+
+                  {marksheetError && (
+                    <div className="p-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger text-xs font-bold">
+                      <span>{marksheetError}</span>
+                    </div>
+                  )}
+
+                  {marksheetUploadErrors.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger text-xs font-bold space-y-1">
+                      <p className="font-extrabold uppercase">Upload failed with the following validation errors:</p>
+                      <ul className="list-disc pl-4 space-y-0.5 max-h-48 overflow-y-auto font-mono text-[10px]">
+                        {marksheetUploadErrors.map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    {/* Class Category Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-400 uppercase">Class Category *</label>
+                      <select
+                        value={selectedClassCategory}
+                        onChange={(e) => setSelectedClassCategory(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border-custom bg-muted-custom/30 text-fg-custom font-extrabold text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                      >
+                        <option value="">Select Category</option>
+                        {(classCategories.length > 0 ? classCategories : ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3']).map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Term Override */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-400 uppercase">Academic Term</label>
+                      <select
+                        value={selectedMarksheetTermId}
+                        onChange={(e) => setSelectedMarksheetTermId(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border-custom bg-muted-custom/30 text-fg-custom font-extrabold text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                      >
+                        {terms.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} {t.active ? '(Active)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Session Override */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-400 uppercase">Academic Session</label>
+                      <select
+                        value={selectedMarksheetSessionId}
+                        onChange={(e) => setSelectedMarksheetSessionId(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border-custom bg-muted-custom/30 text-fg-custom font-extrabold text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                      >
+                        {sessions.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} {s.active ? '(Active)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+                    <button
+                      onClick={handleDownloadCombinedMarksheet}
+                      disabled={marksheetLoading}
+                      className="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all w-full sm:w-auto disabled:opacity-50"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>{marksheetLoading ? 'Generating Sheet...' : 'Download Combined Marksheet'}</span>
+                    </button>
+
+                    <label className="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-secondary text-white hover:bg-amber-600 font-extrabold text-xs shadow-md cursor-pointer transition-all w-full sm:w-auto disabled:opacity-50">
+                      <Plus className="w-4 h-4" />
+                      <span>Upload Updated Marksheet</span>
+                      <input
+                        type="file"
+                        accept=".xlsx"
+                        className="hidden"
+                        disabled={marksheetLoading}
+                        onChange={handleUploadCombinedMarksheet}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         </div>
       </main>
