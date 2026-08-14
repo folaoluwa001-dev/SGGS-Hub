@@ -242,7 +242,8 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.fontSize(8)
         .font('Helvetica')
         .fillColor('#475569')
-        .text(`${schoolConfig.schoolAddress2}  |  Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 50);
+        .text(`${schoolConfig.schoolAddress2}`, 80, 50)
+        .text(`Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 65);
 
       // Receipt Title
       doc.fillColor(schoolConfig.schoolColors.secondary)
