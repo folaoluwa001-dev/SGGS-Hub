@@ -62,36 +62,36 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
 
       // School Name and Motto
       doc.fillColor(schoolConfig.schoolColors.primary)
-         .fontSize(18)
-         .font('Helvetica-Bold')
-         .text(schoolConfig.schoolName, 110, 45, { align: 'left' });
-      
+        .fontSize(18)
+        .font('Helvetica-Bold')
+        .text(schoolConfig.schoolName, 110, 45, { align: 'left' });
+
       doc.fontSize(9)
-         .font('Helvetica-Oblique')
-         .fillColor(schoolConfig.schoolColors.secondary)
-         .text(schoolConfig.schoolMotto.toUpperCase(), 110, 65, { align: 'left' });
+        .font('Helvetica-Oblique')
+        .fillColor(schoolConfig.schoolColors.secondary)
+        .text(schoolConfig.schoolMotto.toUpperCase(), 110, 65, { align: 'left' });
 
       // School Contact details
       doc.fontSize(8)
-         .font('Helvetica')
-         .fillColor('#475569')
-         .text(`${schoolConfig.schoolAddress1} | ${schoolConfig.schoolAddress2}  |  Tel: ${schoolConfig.schoolPhone}  |  Email: ${schoolConfig.schoolEmail}`, 110, 80, { align: 'left', width: 440 });
+        .font('Helvetica')
+        .fillColor('#475569')
+        .text(`${schoolConfig.schoolAddress2}  |  Tel: ${schoolConfig.schoolPhone}  |  Email: ${schoolConfig.schoolEmail}`, 110, 80, { align: 'left', width: 440 });
 
       // Divider Line
       doc.moveTo(40, 105).lineTo(555, 105).strokeColor(schoolConfig.schoolColors.secondary).lineWidth(2).stroke();
 
       // --- TITLE ---
       doc.fontSize(14)
-         .font('Helvetica-Bold')
-         .fillColor(schoolConfig.schoolColors.primary)
-         .text('OFFICIAL STUDENT REPORT CARD', 40, 120, { align: 'center' });
+        .font('Helvetica-Bold')
+        .fillColor(schoolConfig.schoolColors.primary)
+        .text('OFFICIAL STUDENT REPORT CARD', 40, 120, { align: 'center' });
 
       // --- STUDENT INFO BLOCK ---
       doc.rect(40, 145, 515, 85).fillColor('#f8fafc').fill();
       doc.rect(40, 145, 515, 85).strokeColor('#e2e8f0').lineWidth(1).stroke();
 
       doc.fillColor('#0f172a').fontSize(9).font('Helvetica-Bold');
-      
+
       // Column 1
       doc.text('Student ID:', 55, 155).font('Helvetica').text(student.id, 140, 155);
       doc.font('Helvetica-Bold').text('Admission No:', 55, 172).font('Helvetica').text(student.admissionNumber, 140, 172);
@@ -125,7 +125,7 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
         if (i % 2 === 1) {
           doc.rect(40, currentY, 515, 20).fillColor('#f8fafc').fill();
         }
-        
+
         doc.fillColor('#334155').fontSize(8.5).font('Helvetica');
         doc.text(row.subjectName, 50, currentY + 6, { width: 180 });
         doc.text(row.caScore.toString(), 240, currentY + 6, { width: 50, align: 'center' });
@@ -139,7 +139,7 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
         } else {
           doc.fillColor('#0f172a').font('Helvetica');
         }
-        
+
         doc.text(row.grade, 450, currentY + 6, { width: 45, align: 'center' });
         doc.text(row.remark, 500, currentY + 6, { width: 55, align: 'center' });
 
@@ -155,7 +155,7 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
       doc.rect(40, currentY, 515, 20).fillColor('#f1f5f9').fill();
       doc.fillColor('#0f172a').fontSize(9).font('Helvetica-Bold');
       doc.text('SUMMARY STATISTICS', 50, currentY + 6);
-      
+
       const average = subjectCount > 0 ? (totalAggregate / subjectCount).toFixed(2) : '0.00';
       doc.text(`Aggregate: ${totalAggregate}`, 280, currentY + 6);
       doc.text(`Average: ${average}%`, 430, currentY + 6);
@@ -167,11 +167,11 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
       doc.rect(40, currentY, 515, 45).strokeColor('#e2e8f0').lineWidth(1).stroke();
       doc.fillColor('#0f172a').fontSize(9);
       doc.font('Helvetica-Bold').text('Attendance:', 55, currentY + 12).font('Helvetica').text(`${attendance} of days school opened`, 140, currentY + 12);
-      
+
       // Load next term from system settings
       const nextTermDate = 'September 14, 2026';
       doc.font('Helvetica-Bold').text('Next Term Begins:', 55, currentY + 28).font('Helvetica').text(nextTermDate, 140, currentY + 28);
-      
+
       // Grade Guide box
       doc.rect(340, currentY + 5, 205, 35).fillColor('#f8fafc').fill();
       doc.rect(340, currentY + 5, 205, 35).strokeColor('#cbd5e1').stroke();
@@ -184,7 +184,7 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
 
       // --- SIGNATURES & COMMENTS ---
       doc.fillColor('#0f172a').fontSize(9.5).font('Helvetica-Bold').text('PRINCIPAL COMMENTS AND REMARKS', 40, currentY);
-      
+
       // Dotted lines for manual Principal writing
       doc.moveTo(40, currentY + 28).lineTo(555, currentY + 28).strokeColor('#94a3b8').dash(3, { space: 3 }).stroke();
       doc.moveTo(40, currentY + 45).lineTo(555, currentY + 45).strokeColor('#94a3b8').stroke();
@@ -201,8 +201,8 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
 
       // Footer brand notice
       doc.fontSize(7)
-         .fillColor('#94a3b8')
-         .text('This is an official academic report card printed from Success Gate Hub. All marks are authenticated.', 40, 775, { align: 'center' });
+        .fillColor('#94a3b8')
+        .text('This is an official academic report card printed from Success Gate Hub. All marks are authenticated.', 40, 775, { align: 'center' });
 
       doc.end();
     } catch (e) {
@@ -235,25 +235,25 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.restore();
 
       doc.fillColor(schoolConfig.schoolColors.primary)
-         .fontSize(14)
-         .font('Helvetica-Bold')
-         .text(schoolConfig.schoolName, 80, 35);
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .text(schoolConfig.schoolName, 80, 35);
 
       doc.fontSize(8)
-         .font('Helvetica')
-         .fillColor('#475569')
-         .text(`${schoolConfig.schoolAddress1} | ${schoolConfig.schoolAddress2}  |  Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 50);
+        .font('Helvetica')
+        .fillColor('#475569')
+        .text(`${schoolConfig.schoolAddress2}  |  Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 50);
 
       // Receipt Title
       doc.fillColor(schoolConfig.schoolColors.secondary)
-         .fontSize(12)
-         .font('Helvetica-Bold')
-         .text('OFFICIAL PAYMENT RECEIPT', 380, 35, { align: 'right' });
+        .fontSize(12)
+        .font('Helvetica-Bold')
+        .text('OFFICIAL PAYMENT RECEIPT', 380, 35, { align: 'right' });
 
       doc.fontSize(9)
-         .font('Helvetica')
-         .fillColor('#475569')
-         .text(`Receipt No: ${payment.receiptNumber}`, 380, 50, { align: 'right' });
+        .font('Helvetica')
+        .fillColor('#475569')
+        .text(`Receipt No: ${payment.receiptNumber}`, 380, 50, { align: 'right' });
 
       // Divider Line
       doc.moveTo(30, 70).lineTo(560, 70).strokeColor(schoolConfig.schoolColors.secondary).lineWidth(1.5).stroke();
@@ -295,7 +295,7 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.text('Outstanding Balance', 400, 185 + yOffset, { width: 130, align: 'center' });
 
       doc.fontSize(14).font('Helvetica-Bold');
-      
+
       // Expected (Grey)
       doc.fillColor('#334155').text(`NGN ${payment.totalExpected.toLocaleString()}`, 60, 205 + yOffset, { width: 130, align: 'center' });
       // Paid (Green)
@@ -306,9 +306,9 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
 
       // --- FOOTER & SIGN-OFF ---
       doc.fontSize(8)
-         .font('Helvetica-Oblique')
-         .fillColor('#64748b')
-         .text('Thank you for your payment. Please keep this receipt safe as proof of payment.', 40, 270 + yOffset);
+        .font('Helvetica-Oblique')
+        .fillColor('#64748b')
+        .text('Thank you for your payment. Please keep this receipt safe as proof of payment.', 40, 270 + yOffset);
 
       // Signature line
       const signY = 270 + yOffset;
