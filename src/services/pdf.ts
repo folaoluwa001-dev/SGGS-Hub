@@ -234,11 +234,13 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.path('M 40 35 L 60 35 L 65 50 L 52 65 L 38 50 Z').fill();
       doc.restore();
 
+      // School Name
       doc.fillColor(schoolConfig.schoolColors.primary)
         .fontSize(14)
         .font('Helvetica-Bold')
         .text(schoolConfig.schoolName, 80, 35);
 
+      // School Address and Phone Number
       doc.fontSize(8)
         .font('Helvetica')
         .fillColor('#475569')
@@ -257,7 +259,7 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
         .text(`Receipt No: ${payment.receiptNumber}`, 380, 50, { align: 'right' });
 
       // Divider Line
-      doc.moveTo(30, 70).lineTo(560, 70).strokeColor(schoolConfig.schoolColors.secondary).lineWidth(1.5).stroke();
+      doc.moveTo(30, 75).lineTo(560, 75).strokeColor(schoolConfig.schoolColors.secondary).lineWidth(1.5).stroke();
 
       // --- BODY INFO GRID ---
       doc.fillColor('#0f172a').fontSize(9).font('Helvetica-Bold');
