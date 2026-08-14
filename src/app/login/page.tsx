@@ -84,14 +84,6 @@ export default function Login() {
           />
           <span className="font-bold text-xs tracking-wider">SGGS Portal</span>
         </Link>
-        
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-xl bg-card-custom border border-border-custom hover:bg-muted-custom transition-colors"
-          aria-label="Toggle Theme"
-        >
-          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-secondary" />}
-        </button>
       </header>
 
       {/* Main Login Card */}

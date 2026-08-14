@@ -34,7 +34,7 @@ export default function BursarDashboard() {
   // Selection states
   const [selectedClassId, setSelectedClassId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Tuition Lecture Fee');
+  const [selectedCategory, setSelectedCategory] = useState('Tuition Fee');
   const [amountPaid, setAmountPaid] = useState('');
 
   // Search/Filters
@@ -192,7 +192,7 @@ export default function BursarDashboard() {
       if (!response.ok) throw new Error(data.error || 'Failed to save fee configuration');
 
       setFeeSuccessMessage('Fee configuration saved successfully and propagated to students!');
-      
+
       // Reload financial totals
       const resPayments = await fetch('/api/payments').then(r => r.json());
       if (Array.isArray(resPayments)) setPayments(resPayments);
@@ -257,7 +257,7 @@ export default function BursarDashboard() {
   const totalOutstanding = payments.reduce((acc, curr) => acc + curr.balance, 0);
   const expectedGross = totalCollections + totalOutstanding;
 
-  const categories = ['Tuition Lecture Fee', 'Uniforms Levy', 'Books & Materials', 'Assessments & Exams', 'Other Admin Charges'];
+  const categories = ['Tuition Fee', 'Lesson Fee', 'Report Card Levy', 'Assessments & Exams', 'Other Admin Charges'];
 
   return (
     <div className="flex h-screen bg-bg-custom text-fg-custom overflow-hidden transition-colors">
@@ -282,8 +282,8 @@ export default function BursarDashboard() {
             <button
               onClick={() => setActiveTab('overview')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'overview'
-                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                  : 'text-muted-fg-custom hover:bg-muted-custom'
+                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                : 'text-muted-fg-custom hover:bg-muted-custom'
                 }`}
             >
               <DollarSign className="w-4 h-4" />
@@ -293,8 +293,8 @@ export default function BursarDashboard() {
             <button
               onClick={() => setActiveTab('log-payments')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'log-payments'
-                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                  : 'text-muted-fg-custom hover:bg-muted-custom'
+                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                : 'text-muted-fg-custom hover:bg-muted-custom'
                 }`}
             >
               <CreditCard className="w-4 h-4" />
@@ -304,8 +304,8 @@ export default function BursarDashboard() {
             <button
               onClick={() => setActiveTab('debtors')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'debtors'
-                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                  : 'text-muted-fg-custom hover:bg-muted-custom'
+                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                : 'text-muted-fg-custom hover:bg-muted-custom'
                 }`}
             >
               <Users className="w-4 h-4" />
@@ -315,8 +315,8 @@ export default function BursarDashboard() {
             <button
               onClick={() => setActiveTab('fees-structure')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'fees-structure'
-                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                  : 'text-muted-fg-custom hover:bg-muted-custom'
+                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                : 'text-muted-fg-custom hover:bg-muted-custom'
                 }`}
             >
               <Sliders className="w-4 h-4" />
@@ -326,8 +326,8 @@ export default function BursarDashboard() {
             <button
               onClick={() => setActiveTab('settings')}
               className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings'
-                  ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                  : 'text-muted-fg-custom hover:bg-muted-custom'
+                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
+                : 'text-muted-fg-custom hover:bg-muted-custom'
                 }`}
             >
               <Lock className="w-4 h-4" />
@@ -343,12 +343,6 @@ export default function BursarDashboard() {
               <span className="block font-bold text-fg-custom">{user?.fullName}</span>
               <span className="block text-[10px] text-slate-500 font-semibold uppercase">Bursary Officer</span>
             </div>
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-lg bg-muted-custom"
-            >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-secondary" />}
-            </button>
           </div>
 
           <button

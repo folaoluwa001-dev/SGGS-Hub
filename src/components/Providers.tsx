@@ -22,27 +22,19 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read theme from localStorage or system preference
-    const stored = localStorage.getItem('sggs-theme') as Theme;
-    const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const activeTheme = stored || system;
-    
     Promise.resolve().then(() => {
-      setTheme(activeTheme);
-      document.documentElement.className = activeTheme;
+      setTheme('dark');
+      document.documentElement.className = 'dark';
       setMounted(true);
     });
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('sggs-theme', newTheme);
-    document.documentElement.className = newTheme;
+    // No-op - theme is locked to dark
   };
 
   // Prevent flash by avoiding rendering until client-side hydration is complete

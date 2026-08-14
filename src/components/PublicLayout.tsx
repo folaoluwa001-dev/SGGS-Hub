@@ -62,16 +62,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               })}
             </nav>
 
-            {/* Actions (Login & Theme toggle) */}
+            {/* Actions (Login) */}
             <div className="hidden md:flex items-center space-x-3">
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-xl bg-muted-custom hover:bg-border-custom transition-colors"
-                aria-label="Toggle Theme"
-              >
-                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5 text-secondary" />}
-              </button>
-
               <Link
                 href="/login"
                 className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-light text-white font-bold text-sm shadow-md shadow-primary/20 hover:shadow-lg transition-all"
@@ -83,14 +75,6 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center space-x-2">
-              <button
-                onClick={toggleTheme}
-                className="p-1.5 rounded-lg bg-muted-custom"
-                aria-label="Toggle Theme"
-              >
-                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-secondary" />}
-              </button>
-
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-1.5 rounded-lg bg-muted-custom text-fg-custom"

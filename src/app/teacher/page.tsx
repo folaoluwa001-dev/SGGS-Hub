@@ -32,6 +32,16 @@ export default function TeacherDashboard() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedTermId, setSelectedTermId] = useState('');
   const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedClassCategory, setSelectedClassCategory] = useState('');
+
+  const classCategories = Array.from(
+    new Set(
+      classes.map((c: any) => {
+        const match = c.name.trim().match(/^(JSS\d|SSS\d)/i);
+        return match ? match[1].toUpperCase() : c.name.trim();
+      })
+    )
+  ).sort() as string[];
 
   // Sheet sync state
   const [sheetUrl, setSheetUrl] = useState('');
@@ -116,6 +126,23 @@ export default function TeacherDashboard() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedClassCategory(category);
+    if (category) {
+      const filtered = classes.filter(c => {
+        const match = c.name.trim().match(/^(JSS\d|SSS\d)/i);
+        const cat = match ? match[1].toUpperCase() : c.name.trim();
+        return cat === category;
+      });
+      if (filtered.length > 0) {
+        const isCurrentInFiltered = filtered.some(c => c.id === selectedClassId);
+        if (!isCurrentInFiltered) {
+          setSelectedClassId(filtered[0].id);
+        }
+      }
     }
   };
 
@@ -373,12 +400,6 @@ export default function TeacherDashboard() {
               <span className="block font-bold text-fg-custom">{user?.fullName}</span>
               <span className="block text-[10px] text-slate-500 font-semibold uppercase">Academic Teacher</span>
             </div>
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-lg bg-muted-custom"
-            >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-secondary" />}
-            </button>
           </div>
 
           <button
@@ -419,7 +440,14 @@ export default function TeacherDashboard() {
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 className="px-2.5 py-1 rounded-lg bg-muted-custom border border-border-custom text-xs font-bold focus:outline-hidden"
               >
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {classes
+                  .filter(c => {
+                    if (!selectedClassCategory) return true;
+                    const match = c.name.trim().match(/^(JSS\d|SSS\d)/i);
+                    const category = match ? match[1].toUpperCase() : c.name.trim();
+                    return category === selectedClassCategory;
+                  })
+                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
 
@@ -528,7 +556,14 @@ export default function TeacherDashboard() {
                           onChange={(e) => setSelectedClassId(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden"
                         >
-                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          {classes
+                            .filter(c => {
+                              if (!selectedClassCategory) return true;
+                              const match = c.name.trim().match(/^(JSS\d|SSS\d)/i);
+                              const category = match ? match[1].toUpperCase() : c.name.trim();
+                              return category === selectedClassCategory;
+                            })
+                            .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
 
@@ -731,6 +766,18 @@ export default function TeacherDashboard() {
 
               {/* Grading Subject / Term configuration toolbar */}
               <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-card-custom border border-border-custom">
+                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Class Category:</span>
+                  <select
+                    value={selectedClassCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="px-2.5 py-1 rounded-lg bg-muted-custom border border-border-custom text-xs font-bold focus:outline-hidden"
+                  >
+                    <option value="">All Categories</option>
+                    {classCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
+
                 <div className="flex items-center space-x-2 w-full sm:w-auto">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Subject:</span>
                   <select

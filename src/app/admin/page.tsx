@@ -640,6 +640,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteToken = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this token? This will permanently revoke result checker access for this token.')) return;
+    try {
+      const res = await fetch(`/api/tokens/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Deletion failed');
+      fetchTokens();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
   // Backup actions
   const triggerManualBackup = async () => {
     setLoading(true);
@@ -832,12 +843,6 @@ export default function AdminDashboard() {
               <span className="block font-bold text-fg-custom">{user?.fullName}</span>
               <span className="block text-[10px] text-slate-500 font-semibold uppercase">Super Admin</span>
             </div>
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-lg bg-muted-custom"
-            >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-secondary" />}
-            </button>
           </div>
           
           <button
@@ -1255,12 +1260,13 @@ export default function AdminDashboard() {
                         <th className="p-4 font-bold">Used Count</th>
                         <th className="p-4 font-bold">Status</th>
                         <th className="p-4 font-bold">Expiry Date</th>
+                        <th className="p-4 font-bold text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-custom">
                       {tokens.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-slate-400 font-bold">
+                          <td colSpan={8} className="p-8 text-center text-slate-400 font-bold">
                             No tokens generated yet. Click Generate Tokens above.
                           </td>
                         </tr>
@@ -1289,6 +1295,17 @@ export default function AdminDashboard() {
                               </td>
                               <td className="p-4 font-semibold text-slate-400">
                                 {new Date(token.expiresAt).toLocaleDateString()}
+                              </td>
+                              <td className="p-4">
+                                <div className="flex items-center space-x-1.5 justify-end">
+                                  <button
+                                    onClick={() => deleteToken(token.id)}
+                                    className="p-1.5 rounded-lg hover:bg-danger/10 text-danger"
+                                    title="Delete Token"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );

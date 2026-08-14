@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 import { requireAuth, logAuditEvent } from '@/lib/auth';
 
 const REQUIRED_CATEGORIES = [
-  'Tuition Lecture Fee',
-  'Uniforms Levy',
-  'Books & Materials',
+  'Tuition Fee',
+  'Lesson Fee',
+  'Report Card Levy',
   'Assessments & Exams',
   'Other Admin Charges',
 ];
