@@ -32,6 +32,7 @@ interface PaymentInfo {
   balance: number;
   paymentDate: string;
   recordedBy: string;
+  description?: string;
 }
 
 /**
@@ -74,7 +75,7 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
       doc.fontSize(8)
          .font('Helvetica')
          .fillColor('#475569')
-         .text(`${schoolConfig.schoolAddress}  |  Tel: ${schoolConfig.schoolPhone}  |  Email: ${schoolConfig.schoolEmail}`, 110, 80, { align: 'left', width: 440 });
+         .text(`${schoolConfig.schoolAddress1} | ${schoolConfig.schoolAddress2}  |  Tel: ${schoolConfig.schoolPhone}  |  Email: ${schoolConfig.schoolEmail}`, 110, 80, { align: 'left', width: 440 });
 
       // Divider Line
       doc.moveTo(40, 105).lineTo(555, 105).strokeColor(schoolConfig.schoolColors.secondary).lineWidth(2).stroke();
@@ -241,7 +242,7 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.fontSize(8)
          .font('Helvetica')
          .fillColor('#475569')
-         .text(`${schoolConfig.schoolAddress}  |  Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 50);
+         .text(`${schoolConfig.schoolAddress1} | ${schoolConfig.schoolAddress2}  |  Phone: ${schoolConfig.schoolPhone.split(',')[0]}`, 80, 50);
 
       // Receipt Title
       doc.fillColor(schoolConfig.schoolColors.secondary)
@@ -272,36 +273,45 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.font('Helvetica-Bold').text('Class:', 40, 135).font('Helvetica').text(payment.class, 120, 135);
       doc.font('Helvetica-Bold').text('Bursar/Cashier:', 320, 135).font('Helvetica').text(payment.recordedBy, 410, 135);
 
+      // yOffset shifts elements to accommodate description
+      let yOffset = 0;
+      if (payment.description) {
+        doc.font('Helvetica-Bold').text('Description:', 40, 150);
+        doc.font('Helvetica').text(payment.description, 120, 150, { width: 440 });
+        const descHeight = doc.heightOfString(payment.description, { width: 440 });
+        yOffset = Math.max(20, descHeight + 8);
+      }
+
       // Divider
-      doc.moveTo(30, 160).lineTo(560, 160).strokeColor('#cbd5e1').lineWidth(0.5).stroke();
+      doc.moveTo(30, 160 + yOffset).lineTo(560, 160 + yOffset).strokeColor('#cbd5e1').lineWidth(0.5).stroke();
 
       // --- FINANCIALS BLOCK ---
-      doc.rect(40, 175, 515, 60).fillColor('#f8fafc').fill();
-      doc.rect(40, 175, 515, 60).strokeColor('#e2e8f0').stroke();
+      doc.rect(40, 175 + yOffset, 515, 60).fillColor('#f8fafc').fill();
+      doc.rect(40, 175 + yOffset, 515, 60).strokeColor('#e2e8f0').stroke();
 
       doc.fontSize(10).fillColor('#475569').font('Helvetica');
-      doc.text('Total Expected', 60, 185, { width: 130, align: 'center' });
-      doc.text('Amount Paid', 230, 185, { width: 130, align: 'center' });
-      doc.text('Outstanding Balance', 400, 185, { width: 130, align: 'center' });
+      doc.text('Total Expected', 60, 185 + yOffset, { width: 130, align: 'center' });
+      doc.text('Amount Paid', 230, 185 + yOffset, { width: 130, align: 'center' });
+      doc.text('Outstanding Balance', 400, 185 + yOffset, { width: 130, align: 'center' });
 
       doc.fontSize(14).font('Helvetica-Bold');
       
       // Expected (Grey)
-      doc.fillColor('#334155').text(`NGN ${payment.totalExpected.toLocaleString()}`, 60, 205, { width: 130, align: 'center' });
+      doc.fillColor('#334155').text(`NGN ${payment.totalExpected.toLocaleString()}`, 60, 205 + yOffset, { width: 130, align: 'center' });
       // Paid (Green)
-      doc.fillColor(schoolConfig.schoolColors.success).text(`NGN ${payment.amountPaid.toLocaleString()}`, 230, 205, { width: 130, align: 'center' });
+      doc.fillColor(schoolConfig.schoolColors.success).text(`NGN ${payment.amountPaid.toLocaleString()}`, 230, 205 + yOffset, { width: 130, align: 'center' });
       // Balance (Red if > 0, otherwise Green)
       const balColor = payment.balance > 0 ? schoolConfig.schoolColors.danger : schoolConfig.schoolColors.success;
-      doc.fillColor(balColor).text(`NGN ${payment.balance.toLocaleString()}`, 400, 205, { width: 130, align: 'center' });
+      doc.fillColor(balColor).text(`NGN ${payment.balance.toLocaleString()}`, 400, 205 + yOffset, { width: 130, align: 'center' });
 
       // --- FOOTER & SIGN-OFF ---
       doc.fontSize(8)
          .font('Helvetica-Oblique')
          .fillColor('#64748b')
-         .text('Thank you for your payment. Please keep this receipt safe as proof of payment.', 40, 270);
+         .text('Thank you for your payment. Please keep this receipt safe as proof of payment.', 40, 270 + yOffset);
 
       // Signature line
-      const signY = 270;
+      const signY = 270 + yOffset;
       doc.moveTo(380, signY + 30).lineTo(530, signY + 30).strokeColor('#0f172a').lineWidth(1).stroke();
       doc.fillColor('#0f172a').fontSize(8.5).font('Helvetica-Bold').text('Bursary Officer Signature', 395, signY + 36);
 

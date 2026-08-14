@@ -36,6 +36,7 @@ export default function BursarDashboard() {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tuition Fee');
   const [amountPaid, setAmountPaid] = useState('');
+  const [description, setDescription] = useState('');
 
   // Search/Filters
   const [debtorSearch, setDebtorSearch] = useState('');
@@ -220,6 +221,7 @@ export default function BursarDashboard() {
           studentId: selectedStudentId,
           amountPaid: Number(amountPaid),
           category: selectedCategory,
+          description: description.trim() || undefined,
         }),
       });
 
@@ -228,6 +230,7 @@ export default function BursarDashboard() {
 
       setLatestReceipt({ id: data.id, num: data.receiptNumber });
       setAmountPaid('');
+      setDescription('');
 
       // Reload financial totals
       const resPayments = await fetch('/api/payments').then(r => r.json());
@@ -553,6 +556,18 @@ export default function BursarDashboard() {
                         placeholder="e.g. 45000"
                       />
                     </div>
+                  </div>
+
+                  {/* Payment Description (Optional comment box) */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-400">Payment Description (Optional)</label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-sm font-semibold focus:outline-hidden"
+                      placeholder="e.g. Paid part-payment for 1st term, balance due in 2 weeks"
+                      rows={2}
+                    />
                   </div>
 
                   <button

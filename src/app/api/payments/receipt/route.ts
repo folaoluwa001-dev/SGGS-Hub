@@ -52,6 +52,7 @@ export async function GET(request: Request) {
       balance: payment.balance,
       paymentDate: formattedDate,
       recordedBy: payment.recordedByUser.fullName,
+      description: payment.description || undefined,
     };
 
     const pdfBuffer = await generatePaymentReceiptPDF(receiptData);

@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     const userAgent = request.headers.get('user-agent') || 'Unknown';
 
-    const { studentId, amountPaid, category } = body;
+    const { studentId, amountPaid, category, description } = body;
 
     if (!studentId || amountPaid === undefined || !category) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
@@ -97,6 +97,7 @@ export async function POST(request: Request) {
           receiptNumber: receiptNum, // Overwrite with latest transaction receipt
           paymentDate: new Date(),
           recordedBy: sessionUser.userId,
+          description: description || null,
         },
         include: {
           student: true,
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
           category,
           receiptNumber: receiptNum,
           recordedBy: sessionUser.userId,
+          description: description || null,
         },
         include: {
           student: true,

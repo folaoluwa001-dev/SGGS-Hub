@@ -168,8 +168,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact Directory</h3>
               <ul className="space-y-2.5 text-xs leading-relaxed">
                 <li>
-                  <span className="block text-slate-500 font-medium">Main Address:</span>
-                  <span className="text-slate-300">{schoolConfig.schoolAddress}</span>
+                  <span className="block text-slate-500 font-medium">Main Addresses:</span>
+                  <span className="text-slate-300 block">{schoolConfig.schoolAddress1}</span>
+                  <span className="text-slate-300 block mt-1">{schoolConfig.schoolAddress2}</span>
                 </li>
                 <li>
                   <span className="block text-slate-500 font-medium">Telephone Direct Line:</span>

@@ -54,8 +54,11 @@ export default function Contact() {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="block font-bold text-xs text-slate-400 uppercase tracking-wide">Campus Address</span>
-                  <span className="text-xs sm:text-sm text-muted-fg-custom">{schoolConfig.schoolAddress}</span>
+                  <span className="block font-bold text-xs text-slate-400 uppercase tracking-wide">Campus Addresses</span>
+                  <div className="space-y-1.5 text-xs sm:text-sm text-muted-fg-custom">
+                    <p>{schoolConfig.schoolAddress1}</p>
+                    <p>{schoolConfig.schoolAddress2}</p>
+                  </div>
                 </div>
               </div>
 

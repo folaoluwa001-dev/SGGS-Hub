@@ -222,7 +222,9 @@ export default function ResultChecker() {
                   <div>
                     <h2 className="text-xl sm:text-2xl font-black text-primary print:text-black leading-none">{schoolConfig.schoolName}</h2>
                     <p className="text-[10px] sm:text-xs font-bold text-secondary uppercase tracking-widest leading-none mt-1.5">{schoolConfig.schoolMotto}</p>
-                    <p className="text-[9px] text-muted-fg-custom print:text-slate-600 mt-1 max-w-md leading-tight">{schoolConfig.schoolAddress}</p>
+                    <p className="text-[9px] text-muted-fg-custom print:text-slate-600 mt-1 max-w-md leading-tight">
+                      {schoolConfig.schoolAddress1} | {schoolConfig.schoolAddress2}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right hidden sm:block">
