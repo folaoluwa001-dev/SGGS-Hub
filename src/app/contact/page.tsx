@@ -54,7 +54,7 @@ export default function Contact() {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="block font-bold text-xs text-slate-400 uppercase tracking-wide">Campus Addresses</span>
+                  <span className="block font-bold text-xs text-slate-400 uppercase tracking-wide">School Addresses</span>
                   <div className="space-y-1.5 text-xs sm:text-sm text-muted-fg-custom">
                     <p>{schoolConfig.schoolAddress1}</p>
                     <p>{schoolConfig.schoolAddress2}</p>
@@ -118,7 +118,7 @@ export default function Contact() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <h3 className="text-xl font-extrabold text-primary dark:text-white">Send a Message</h3>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label htmlFor="name" className="text-xs font-semibold text-slate-400">Full Name</label>
