@@ -7,7 +7,8 @@ import { useTheme } from '@/components/Providers';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Users, CreditCard, DollarSign, LogOut, Download, Plus,
-  Printer, Search, Filter, ShieldCheck, AlertCircle, RefreshCw, FileText, Lock, Sliders
+  Printer, Search, Filter, ShieldCheck, AlertCircle, RefreshCw, FileText, Lock, Sliders,
+  PanelLeftClose, PanelLeftOpen, Menu, X
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 
@@ -15,6 +16,8 @@ export default function BursarDashboard() {
   const router = useRouter();
   const { theme } = useTheme();
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'log-payments' | 'debtors' | 'fees-structure' | 'settings'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -266,18 +269,137 @@ export default function BursarDashboard() {
   return (
     <div className="flex h-screen bg-bg-custom text-fg-custom overflow-hidden transition-colors">
 
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-card-custom border-r border-border-custom flex flex-col justify-between hidden md:flex">
-        <div className="p-6 space-y-8">
+      {/* MOBILE DRAWER BACKDROP & SIDEBAR */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden animate-in fade-in duration-200">
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+          />
+          <aside className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card-custom border-r border-border-custom flex flex-col justify-between shadow-2xl p-6 z-10 animate-in slide-in-from-left duration-300">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-border-custom pb-4">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0"
+                    dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
+                  />
+                  <div>
+                    <span className="block font-black text-xs tracking-wider uppercase text-primary dark:text-white">Bursary Portal</span>
+                    <span className="block text-[9px] text-muted-fg-custom font-bold uppercase">{schoolConfig.schoolName.substring(0, 14)}...</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 rounded-lg bg-muted-custom text-fg-custom hover:text-danger cursor-pointer"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Mobile Nav Links */}
+              <nav className="space-y-1.5">
+                <button
+                  onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'overview'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <DollarSign className="w-4 h-4 flex-shrink-0" />
+                  <span>Financial Overview</span>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('log-payments'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'log-payments'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4 flex-shrink-0" />
+                  <span>Log Student Payment</span>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('debtors'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'debtors'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span>Debtors Ledger</span>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('fees-structure'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'fees-structure'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <Sliders className="w-4 h-4 flex-shrink-0" />
+                  <span>Fee Structure</span>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'settings'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <Lock className="w-4 h-4 flex-shrink-0" />
+                  <span>Change Password</span>
+                </button>
+              </nav>
+            </div>
+
+            {/* Mobile Footer */}
+            <div className="border-t border-border-custom pt-4 space-y-4">
+              <div className="text-xs">
+                <span className="block font-bold text-fg-custom">{user?.fullName}</span>
+                <span className="block text-[10px] text-muted-fg-custom font-semibold uppercase">Bursary Officer</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center space-x-2 w-full px-4 py-2.5 rounded-xl border border-border-custom hover:bg-danger/10 hover:text-danger text-xs font-extrabold transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out Portal</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* DESKTOP COLLAPSIBLE SIDEBAR */}
+      <aside
+        className={`bg-card-custom border-r border-border-custom flex-col justify-between hidden md:flex transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        <div className={`p-4 ${sidebarCollapsed ? 'space-y-6' : 'p-6 space-y-8'}`}>
           {/* Brand header */}
-          <div className="flex items-center space-x-3">
-            <div
-              className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center"
-              dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
-            />
-            <div>
-              <span className="block font-black text-xs tracking-wider uppercase text-primary dark:text-white">Bursary Portal</span>
-              <span className="block text-[9px] text-slate-500 font-bold uppercase">{schoolConfig.schoolName.substring(0, 12)}...</span>
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <div className="flex items-center space-x-3 overflow-hidden">
+              <div
+                className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-xs"
+                dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
+              />
+              {!sidebarCollapsed && (
+                <div className="truncate">
+                  <span className="block font-black text-xs tracking-wider uppercase text-primary dark:text-white truncate">Bursary Portal</span>
+                  <span className="block text-[9px] text-muted-fg-custom font-bold uppercase truncate">{schoolConfig.schoolName.substring(0, 12)}...</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -285,77 +407,98 @@ export default function BursarDashboard() {
           <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'overview'
-                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                : 'text-muted-fg-custom hover:bg-muted-custom'
-                }`}
+              title={sidebarCollapsed ? 'Financial Overview' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'overview'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
             >
-              <DollarSign className="w-4 h-4" />
-              <span>Financial Overview</span>
+              <DollarSign className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Financial Overview</span>}
             </button>
 
             <button
               onClick={() => setActiveTab('log-payments')}
-              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'log-payments'
-                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                : 'text-muted-fg-custom hover:bg-muted-custom'
-                }`}
+              title={sidebarCollapsed ? 'Log Student Payment' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'log-payments'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
             >
-              <CreditCard className="w-4 h-4" />
-              <span>Log Student Payment</span>
+              <CreditCard className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Log Student Payment</span>}
             </button>
 
             <button
               onClick={() => setActiveTab('debtors')}
-              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'debtors'
-                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                : 'text-muted-fg-custom hover:bg-muted-custom'
-                }`}
+              title={sidebarCollapsed ? 'Debtors Ledger' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'debtors'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
             >
-              <Users className="w-4 h-4" />
-              <span>Debtors Ledger</span>
+              <Users className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Debtors Ledger</span>}
             </button>
 
             <button
               onClick={() => setActiveTab('fees-structure')}
-              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'fees-structure'
-                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                : 'text-muted-fg-custom hover:bg-muted-custom'
-                }`}
+              title={sidebarCollapsed ? 'Fee Structure' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'fees-structure'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
             >
-              <Sliders className="w-4 h-4" />
-              <span>Fee Structure</span>
+              <Sliders className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Fee Structure</span>}
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings'
-                ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                : 'text-muted-fg-custom hover:bg-muted-custom'
-                }`}
+              title={sidebarCollapsed ? 'Change Password' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'settings'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
             >
-              <Lock className="w-4 h-4" />
-              <span>Change Password</span>
+              <Lock className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Change Password</span>}
             </button>
           </nav>
         </div>
 
         {/* User profile footer */}
-        <div className="p-6 border-t border-border-custom space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="text-xs">
-              <span className="block font-bold text-fg-custom">{user?.fullName}</span>
-              <span className="block text-[10px] text-slate-500 font-semibold uppercase">Bursary Officer</span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center space-x-2 w-full px-4 py-2.5 rounded-xl border border-border-custom hover:bg-danger/10 hover:text-danger text-xs font-extrabold transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out Portal</span>
-          </button>
+        <div className={`p-4 border-t border-border-custom ${sidebarCollapsed ? 'flex flex-col items-center space-y-3' : 'p-6 space-y-4'}`}>
+          {!sidebarCollapsed ? (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="text-xs truncate">
+                  <span className="block font-bold text-fg-custom truncate">{user?.fullName}</span>
+                  <span className="block text-[10px] text-muted-fg-custom font-semibold uppercase truncate">Bursary Officer</span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center space-x-2 w-full px-4 py-2.5 rounded-xl border border-border-custom hover:bg-danger/10 hover:text-danger text-xs font-extrabold transition-all cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="p-2.5 rounded-xl border border-border-custom hover:bg-danger/10 hover:text-danger transition-all cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </aside>
 
@@ -363,29 +506,43 @@ export default function BursarDashboard() {
       <main className="flex-1 flex flex-col overflow-hidden">
 
         {/* TOP BAR */}
-        <header className="h-16 bg-card-custom border-b border-border-custom px-6 flex items-center justify-between">
-          <div className="flex items-center space-x-2 md:hidden">
-            <div
-              className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center"
-              dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
-            />
-            <span className="font-bold text-xs tracking-wider uppercase">SGGS Bursary</span>
+        <header className="h-16 bg-card-custom border-b border-border-custom px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {/* Mobile menu open button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-border-custom bg-muted-custom/60 hover:bg-muted-custom text-fg-custom cursor-pointer"
+              aria-label="Open sidebar menu"
+              title="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Desktop collapse toggle */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden md:flex p-2 rounded-xl border border-border-custom bg-muted-custom/60 hover:bg-muted-custom text-fg-custom hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+
+            <h2 className="text-sm font-black text-primary dark:text-white uppercase hidden sm:block">
+              {activeTab === 'overview' && 'Financial Statistics Overview'}
+              {activeTab === 'log-payments' && 'Record Student Fee Payment'}
+              {activeTab === 'debtors' && 'School Debtors & Outstandings Ledger'}
+              {activeTab === 'fees-structure' && 'Class Fee Configurations Grid'}
+              {activeTab === 'settings' && 'Account Settings'}
+            </h2>
           </div>
 
-          <h2 className="text-sm font-black text-primary dark:text-white uppercase hidden md:block">
-            {activeTab === 'overview' && 'Financial Statistics Overview'}
-            {activeTab === 'log-payments' && 'Record Student Fee Payment'}
-            {activeTab === 'debtors' && 'School Debtors & Outstandings Ledger'}
-            {activeTab === 'fees-structure' && 'Class Fee Configurations Grid'}
-            {activeTab === 'settings' && 'Account Settings'}
-          </h2>
-
-          <div className="flex items-center space-x-3">
-            <span className="text-[10px] text-slate-400 font-bold uppercase hidden sm:block">Ledger: Manual tracking only</span>
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <span className="text-[10px] text-muted-fg-custom font-bold uppercase hidden lg:block">Ledger: Manual tracking only</span>
             <ThemeToggle />
             <button
               onClick={handleLogout}
-              className="md:hidden p-2 rounded-lg hover:bg-danger/10 text-danger"
+              className="md:hidden p-2 rounded-xl border border-border-custom hover:bg-danger/10 text-danger"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
