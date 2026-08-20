@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Users, CreditCard, DollarSign, LogOut, Download, Plus,
   Printer, Search, Filter, ShieldCheck, AlertCircle, RefreshCw, FileText, Lock, Sliders,
-  PanelLeftClose, PanelLeftOpen, Menu, X
+  PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 
@@ -387,8 +387,8 @@ export default function BursarDashboard() {
         }`}
       >
         <div className={`p-4 ${sidebarCollapsed ? 'space-y-6' : 'p-6 space-y-8'}`}>
-          {/* Brand header */}
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {/* Brand header & expand/collapse toggle */}
+          <div className={`flex items-center ${sidebarCollapsed ? 'flex-col space-y-3' : 'justify-between'}`}>
             <div className="flex items-center space-x-3 overflow-hidden">
               <div
                 className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-xs"
@@ -401,6 +401,16 @@ export default function BursarDashboard() {
                 </div>
               )}
             </div>
+
+            {/* In-sidebar Expand/Collapse Button */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-1.5 rounded-lg border border-border-custom bg-muted-custom/60 hover:bg-muted-custom text-fg-custom hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
           </div>
 
           {/* Navigation Links */}
