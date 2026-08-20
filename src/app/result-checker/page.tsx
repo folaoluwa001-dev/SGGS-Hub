@@ -220,41 +220,41 @@ export default function ResultChecker() {
                     dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
                   />
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-black text-primary print:text-black leading-none">{schoolConfig.schoolName}</h2>
+                    <h2 className="text-xl sm:text-2xl font-black text-white print:text-black leading-none">{schoolConfig.schoolName}</h2>
                     <p className="text-[10px] sm:text-xs font-bold text-secondary uppercase tracking-widest leading-none mt-1.5">{schoolConfig.schoolMotto}</p>
-                    <p className="text-[9px] text-muted-fg-custom print:text-slate-600 mt-1 max-w-md leading-tight">
+                    <p className="text-[9px] text-slate-300 print:text-slate-600 mt-1 max-w-md leading-tight">
                       {schoolConfig.schoolAddress1} | {schoolConfig.schoolAddress2}
                     </p>
                   </div>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <span className="block font-black text-sm text-slate-400">REPORT SHEET</span>
+                  <span className="block font-black text-sm text-slate-300">REPORT SHEET</span>
                   <span className="block font-bold text-xs text-secondary">{reportData.term.name.toUpperCase()}</span>
-                  <span className="block text-[10px] text-muted-fg-custom">{reportData.session.name} Session</span>
+                  <span className="block text-[10px] text-slate-300">{reportData.session.name} Session</span>
                 </div>
               </div>
 
               {/* STUDENT BIO CARD */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 rounded-2xl bg-bg-custom/50 border border-border-custom print:bg-slate-100 print:text-black">
                 <div className="space-y-1.5 text-xs">
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Student Name:</span><span className="font-extrabold text-primary print:text-black uppercase">{reportData.student.fullName}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Student ID:</span><span className="font-semibold">{reportData.student.id}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Admission No:</span><span className="font-semibold">{reportData.student.admissionNumber}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Gender:</span><span className="font-semibold">{reportData.student.gender}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Student Name:</span><span className="font-extrabold text-white print:text-black uppercase">{reportData.student.fullName}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Student ID:</span><span className="font-semibold text-slate-200">{reportData.student.id}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Admission No:</span><span className="font-semibold text-slate-200">{reportData.student.admissionNumber}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Gender:</span><span className="font-semibold text-slate-200">{reportData.student.gender}</span></div>
                 </div>
                 <div className="space-y-1.5 text-xs">
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Class Arm:</span><span className="font-extrabold text-primary print:text-black">{reportData.student.class}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Academic Session:</span><span className="font-semibold">{reportData.session.name}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Academic Term:</span><span className="font-semibold">{reportData.term.name}</span></div>
-                  <div className="flex"><span className="w-28 font-bold text-slate-400">Parent/Guardian:</span><span className="font-semibold">{reportData.student.parentName}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Class Arm:</span><span className="font-extrabold text-white print:text-black">{reportData.student.class}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Academic Session:</span><span className="font-semibold text-slate-200">{reportData.session.name}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Academic Term:</span><span className="font-semibold text-slate-200">{reportData.term.name}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Parent/Guardian:</span><span className="font-semibold text-slate-200">{reportData.student.parentName}</span></div>
                 </div>
               </div>
 
               {/* REPORT CARD TABLE */}
               {reportData.results.length === 0 ? (
                 <div className="text-center py-12 border border-dashed border-border-custom rounded-2xl">
-                  <span className="block text-sm text-slate-400 font-bold">No results logged for this term yet.</span>
-                  <span className="text-xs text-slate-500">Contact the administration if this is an error.</span>
+                  <span className="block text-sm text-slate-300 font-bold">No results logged for this term yet.</span>
+                  <span className="text-xs text-slate-400">Contact the administration if this is an error.</span>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -272,14 +272,14 @@ export default function ResultChecker() {
                     <tbody className="divide-y divide-border-custom">
                       {reportData.results.map((row) => (
                         <tr key={row.subject} className="hover:bg-muted-custom/20">
-                          <td className="p-3 font-semibold text-primary dark:text-slate-300 print:text-black">{row.subject}</td>
-                          <td className="p-3 text-center">{row.caScore}</td>
-                          <td className="p-3 text-center">{row.examScore}</td>
-                          <td className="p-3 text-center font-bold">{row.totalScore}</td>
+                          <td className="p-3 font-semibold text-white print:text-black">{row.subject}</td>
+                          <td className="p-3 text-center text-slate-200">{row.caScore}</td>
+                          <td className="p-3 text-center text-slate-200">{row.examScore}</td>
+                          <td className="p-3 text-center font-bold text-white">{row.totalScore}</td>
                           <td className={`p-3 text-center font-black ${
-                            row.grade === 'F' ? 'text-danger' : 'text-primary dark:text-secondary print:text-black'
+                            row.grade === 'F' ? 'text-danger' : 'text-secondary print:text-black'
                           }`}>{row.grade}</td>
-                          <td className="p-3 text-center text-muted-fg-custom font-medium print:text-slate-700">{row.remark}</td>
+                          <td className="p-3 text-center text-slate-300 font-medium print:text-slate-700">{row.remark}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -291,20 +291,20 @@ export default function ResultChecker() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border-custom">
                 {/* Aggregate / Averages */}
                 <div className="p-5 rounded-2xl bg-muted-custom/40 space-y-2 border border-border-custom">
-                  <h4 className="font-extrabold text-xs text-primary dark:text-white uppercase tracking-wider">Summary Statistics</h4>
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Summary Statistics</h4>
                   <div className="flex justify-between text-xs pt-2">
-                    <span className="font-bold text-slate-400">Total Aggregate Score:</span>
-                    <span className="font-extrabold text-primary dark:text-white">{totalScore}</span>
+                    <span className="font-bold text-slate-300">Total Aggregate Score:</span>
+                    <span className="font-extrabold text-white">{totalScore}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="font-bold text-slate-400">Overall Average Score:</span>
+                    <span className="font-bold text-slate-300">Overall Average Score:</span>
                     <span className="font-extrabold text-secondary">{averageScore}%</span>
                   </div>
                 </div>
 
                 {/* Grade System Guide */}
-                <div className="p-5 rounded-2xl bg-muted-custom/20 border border-border-custom space-y-2 text-[10px] text-muted-fg-custom leading-normal">
-                  <h4 className="font-bold text-xs text-primary dark:text-white uppercase tracking-wider">Grading Key</h4>
+                <div className="p-5 rounded-2xl bg-muted-custom/20 border border-border-custom space-y-2 text-[10px] text-slate-300 leading-normal">
+                  <h4 className="font-bold text-xs text-white uppercase tracking-wider">Grading Key</h4>
                   <p>70 - 100 = A (Excellent)  |  60 - 69 = B (Very Good)</p>
                   <p>50 - 59 = C (Good)            |  45 - 49 = D (Fair)</p>
                   <p>40 - 44 = E (Pass)            |  00 - 39 = F (Fail)</p>
@@ -315,11 +315,11 @@ export default function ResultChecker() {
               <div className="pt-10 grid grid-cols-2 gap-8 text-center text-xs">
                 <div className="space-y-4">
                   <div className="h-6 border-b border-slate-300 mx-auto max-w-[200px]" />
-                  <span className="font-bold text-slate-400">Class Teacher Signature</span>
+                  <span className="font-bold text-slate-300">Class Teacher Signature</span>
                 </div>
                 <div className="space-y-4">
                   <div className="h-6 border-b border-slate-300 mx-auto max-w-[200px]" />
-                  <span className="font-bold text-slate-400">School Principal Signature</span>
+                  <span className="font-bold text-slate-300">School Principal Signature</span>
                 </div>
               </div>
 

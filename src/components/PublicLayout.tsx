@@ -33,7 +33,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
               />
               <div>
-                <span className="block font-black text-sm sm:text-base tracking-wider text-primary dark:text-white leading-none">
+                <span className="block font-black text-sm sm:text-base tracking-wider text-white leading-none">
                   {schoolConfig.schoolName.split(' ')[0]} {schoolConfig.schoolName.split(' ')[1] || ''}
                 </span>
                 <span className="block font-medium text-[9px] sm:text-[10px] text-secondary tracking-widest leading-none mt-1">
@@ -52,8 +52,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                     href={link.href}
                     className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                       isActive
-                        ? 'bg-primary/10 text-primary dark:text-secondary'
-                        : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                        ? 'bg-secondary/15 text-secondary'
+                        : 'text-slate-300 hover:bg-muted-custom hover:text-white'
                     }`}
                   >
                     {link.name}
@@ -77,7 +77,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div className="flex md:hidden items-center space-x-2">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-1.5 rounded-lg bg-muted-custom text-fg-custom"
+                className="p-1.5 rounded-lg bg-muted-custom text-white"
                 aria-label="Toggle Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -98,8 +98,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-4 py-2.5 rounded-xl text-sm font-bold ${
                     isActive
-                      ? 'bg-primary text-white dark:bg-primary dark:text-secondary'
-                      : 'text-muted-fg-custom hover:bg-muted-custom'
+                      ? 'bg-secondary text-white'
+                      : 'text-slate-300 hover:bg-muted-custom hover:text-white'
                   }`}
                 >
                   {link.name}
@@ -124,7 +124,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-grow">{children}</main>
 
       {/* FOOTER */}
-      <footer className="bg-[#0b1329] text-[#94a3b8] border-t border-slate-800 transition-colors">
+      <footer className="bg-[#0b1329] text-[#cbd5e1] border-t border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* School Brief */}
@@ -138,7 +138,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   {schoolConfig.schoolName}
                 </span>
               </div>
-              <p className="text-xs leading-relaxed max-w-sm mb-4">
+              <p className="text-xs text-slate-300 leading-relaxed max-w-sm mb-4">
                 Providing standard-based, premium quality primary and secondary education. Building leaders of tomorrow with character and excellent academic foundations.
               </p>
               <div className="flex items-center text-secondary text-xs font-semibold uppercase tracking-wider">
@@ -150,7 +150,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             {/* Quick Links */}
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Portal Navigation</h3>
-              <ul className="space-y-2.5 text-xs">
+              <ul className="space-y-2.5 text-xs text-slate-300">
                 <li>
                   <Link href="/result-checker" className="hover:text-white transition-colors">Result Checker Portal</Link>
                 </li>
@@ -168,23 +168,23 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact Directory</h3>
               <ul className="space-y-2.5 text-xs leading-relaxed">
                 <li>
-                  <span className="block text-slate-500 font-medium">Main Addresses:</span>
-                  <span className="text-slate-300 block">{schoolConfig.schoolAddress1}</span>
-                  <span className="text-slate-300 block mt-1">{schoolConfig.schoolAddress2}</span>
+                  <span className="block text-slate-400 font-medium">Main Addresses:</span>
+                  <span className="text-slate-200 block">{schoolConfig.schoolAddress1}</span>
+                  <span className="text-slate-200 block mt-1">{schoolConfig.schoolAddress2}</span>
                 </li>
                 <li>
-                  <span className="block text-slate-500 font-medium">Telephone Direct Line:</span>
-                  <span className="text-slate-300">{schoolConfig.schoolPhone}</span>
+                  <span className="block text-slate-400 font-medium">Telephone Direct Line:</span>
+                  <span className="text-slate-200">{schoolConfig.schoolPhone}</span>
                 </li>
                 <li>
-                  <span className="block text-slate-500 font-medium">Email Address:</span>
-                  <span className="text-slate-300 hover:text-white transition-colors">{schoolConfig.schoolEmail}</span>
+                  <span className="block text-slate-400 font-medium">Email Address:</span>
+                  <span className="text-slate-200 hover:text-white transition-colors">{schoolConfig.schoolEmail}</span>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-slate-800 text-center text-[10px] text-slate-500">
+          <div className="mt-12 pt-8 border-t border-slate-800 text-center text-[10px] text-slate-400">
             &copy; {new Date().getFullYear()} {schoolConfig.schoolName}. All rights reserved. Designed and developed as a Progressive Web Application.
           </div>
         </div>

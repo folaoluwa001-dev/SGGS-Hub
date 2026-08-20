@@ -34,6 +34,7 @@ export default function RootLayout({
 }>) {
   const styleString = `
     :root {
+      color-scheme: dark;
       --primary: ${schoolConfig.schoolColors.primary};
       --primary-light: ${schoolConfig.schoolColors.primaryLight};
       --secondary: ${schoolConfig.schoolColors.secondary};
@@ -42,16 +43,28 @@ export default function RootLayout({
       --success: ${schoolConfig.schoolColors.success};
       --warning: ${schoolConfig.schoolColors.warning};
       --danger: ${schoolConfig.schoolColors.danger};
+      --background: #0b111e;
+      --foreground: #ffffff;
+      --card: #151f32;
+      --card-foreground: #ffffff;
+      --popover: #151f32;
+      --popover-foreground: #ffffff;
+      --muted: #1e2e4a;
+      --muted-foreground: #cbd5e1;
+      --border: #1e2e4a;
+      --input: #1e2e4a;
+      --ring: var(--secondary);
     }
     .dark {
+      color-scheme: dark;
       --background: #0b111e;
-      --foreground: #f8fafc;
+      --foreground: #ffffff;
       --card: #151f32;
-      --card-foreground: #f8fafc;
+      --card-foreground: #ffffff;
       --popover: #151f32;
-      --popover-foreground: #f8fafc;
+      --popover-foreground: #ffffff;
       --muted: #1e2e4a;
-      --muted-foreground: #94a3b8;
+      --muted-foreground: #cbd5e1;
       --border: #1e2e4a;
       --input: #1e2e4a;
       --ring: var(--secondary);
@@ -59,14 +72,15 @@ export default function RootLayout({
   `;
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
+        <meta name="color-scheme" content="dark" />
         <style dangerouslySetInnerHTML={{ __html: styleString }} />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="theme-color" content={schoolConfig.schoolColors.primary} />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="antialiased">
+      <body className="dark bg-[#0b111e] text-[#f8fafc] antialiased">
         <Providers>
           <PWARegister />
           {children}

@@ -106,44 +106,44 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Value 1 */}
             <div className="p-6 rounded-2xl bg-bg-custom hover:bg-muted-custom/25 border border-border-custom hover:shadow-lg transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-accent-light/15 text-accent-light flex items-center justify-center">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Academic Excellence</h3>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <h3 className="font-extrabold text-base text-white">Academic Excellence</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
                 From foundational literacy to advanced sciences, we provide students with the knowledge and critical thinking skills needed to thrive in a rapidly changing world.
               </p>
             </div>
 
             {/* Value 2 */}
             <div className="p-6 rounded-2xl bg-bg-custom hover:bg-muted-custom/25 border border-border-custom hover:shadow-lg transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center">
                 <CreditCard className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Latest Announcements</h3>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <h3 className="font-extrabold text-base text-white">Latest Announcements</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
                 📢 2026/2027 Academic Session — Registration is now open. All new students are advised to complete enrollment online or onsite. Visit the school office or send us a mail to get started.
               </p>
             </div>
 
             {/* Value 3 */}
             <div className="p-6 rounded-2xl bg-bg-custom hover:bg-muted-custom/25 border border-border-custom hover:shadow-lg transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-accent-light/10 text-accent-light flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-accent-light/15 text-accent-light flex items-center justify-center">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Parental Involvement</h3>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <h3 className="font-extrabold text-base text-white">Parental Involvement</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
                 We believe great education is a partnership. Parents are warmly encouraged to engage with school activities, attend meetings, and stay connected with their child's academic journey. Together, we raise exceptional children.
               </p>
             </div>
 
             {/* Value 4 */}
             <div className="p-6 rounded-2xl bg-bg-custom hover:bg-muted-custom/25 border border-border-custom hover:shadow-lg transition-all space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-base text-primary dark:text-white">Student Life</h3>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <h3 className="font-extrabold text-base text-white">Student Life</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
                 Beyond the classroom, our students thrive. From inter-house sports to science fairs, debate competitions to cultural showcases. school life here is rich, vibrant, and purposefully designed to build confident, well-rounded individuals.
               </p>
             </div>
@@ -155,10 +155,10 @@ export default function Home() {
       <section className="py-20 bg-linear-to-b from-bg-custom via-muted-custom/10 to-bg-custom">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-3 mb-16">
-            <h2 className="text-3xl font-black tracking-tight text-primary dark:text-white">
+            <h2 className="text-3xl font-black tracking-tight text-white">
               Academic Curriculums
             </h2>
-            <p className="text-sm sm:text-base text-muted-fg-custom max-w-lg mx-auto">
+            <p className="text-sm sm:text-base text-slate-300 max-w-lg mx-auto">
               Our structures provide dedicated learning tracks tailored to the developmental needs of our students.
             </p>
           </div>
@@ -168,11 +168,11 @@ export default function Home() {
             <div className="p-8 rounded-3xl bg-card-custom border border-border-custom shadow-md space-y-6">
               <h3 className="text-xl font-black text-secondary">Junior Secondary School</h3>
               <div className="flex flex-wrap gap-2">
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">JSS 1</span>
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">JSS 2</span>
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">JSS 3</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-secondary/15 text-secondary font-bold text-xs">JSS 1</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-secondary/15 text-secondary font-bold text-xs">JSS 2</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-secondary/15 text-secondary font-bold text-xs">JSS 3</span>
               </div>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed">
                 We focus on foundational courses including General Mathematics, English Studies, Civic Education, and Basic Sciences. Preparing our students for basic education certificates and secondary transitions.
               </p>
             </div>
@@ -181,11 +181,11 @@ export default function Home() {
             <div className="p-8 rounded-3xl bg-card-custom border border-border-custom shadow-md space-y-6">
               <h3 className="text-xl font-black text-accent-light">Senior Secondary School</h3>
               <div className="flex flex-wrap gap-2">
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">SSS 1</span>
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">SSS 2</span>
-                <span className="px-3.5 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs">SSS 3</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-accent-light/15 text-accent-light font-bold text-xs">SSS 1</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-accent-light/15 text-accent-light font-bold text-xs">SSS 2</span>
+                <span className="px-3.5 py-1.5 rounded-full bg-accent-light/15 text-accent-light font-bold text-xs">SSS 3</span>
               </div>
-              <p className="text-xs text-muted-fg-custom leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed">
                 We offer specialized tracks in Science, Arts, and Commercial studies. Courses include Physics, Chemistry, Biology, Economics, Government, and Data Processing, preparing students for university entrance.
               </p>
             </div>
