@@ -1478,10 +1478,10 @@ export default function AdminDashboard() {
                           const isConsumed = token.status === 'Consumed';
                           const isActive = token.status === 'Active';
                           
-                          let statusBg = 'bg-slate-100 text-slate-600';
-                          if (isActive) statusBg = 'bg-emerald-500/10 text-emerald-600';
-                          else if (isConsumed) statusBg = 'bg-amber-500/10 text-amber-600';
-                          else if (isExpired) statusBg = 'bg-danger/10 text-danger';
+                          let statusBg = 'bg-muted-custom text-muted-fg-custom';
+                          if (isActive) statusBg = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
+                          else if (isConsumed) statusBg = 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
+                          else if (isExpired) statusBg = 'bg-danger/15 text-danger';
 
                           return (
                             <tr key={token.id} className="hover:bg-muted-custom/10 transition-colors">
@@ -1927,7 +1927,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowStudentModal(false)}
-                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom font-bold text-xs transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom text-fg-custom font-bold text-xs transition-colors"
                 >
                   Cancel
                 </button>
@@ -1987,7 +1987,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowSubjectModal(false)}
-                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom font-bold text-xs transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom text-fg-custom font-bold text-xs transition-colors"
                 >
                   Cancel
                 </button>
@@ -2025,7 +2025,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'single' })}
                     className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'single' ? 'bg-primary text-white dark:text-secondary' : 'text-slate-400 hover:text-fg-custom'
+                      tokenForm.mode === 'single' ? 'bg-primary text-white' : 'text-muted-fg-custom hover:text-fg-custom'
                     }`}
                   >
                     Single Student
@@ -2034,7 +2034,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'bulk' })}
                     className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'bulk' ? 'bg-primary text-white dark:text-secondary' : 'text-slate-400 hover:text-fg-custom'
+                      tokenForm.mode === 'bulk' ? 'bg-primary text-white' : 'text-muted-fg-custom hover:text-fg-custom'
                     }`}
                   >
                     Bulk Class Arm
@@ -2087,7 +2087,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowTokenModal(false)}
-                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom font-bold text-xs transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-muted-custom hover:bg-border-custom text-fg-custom font-bold text-xs transition-colors"
                 >
                   Cancel
                 </button>
