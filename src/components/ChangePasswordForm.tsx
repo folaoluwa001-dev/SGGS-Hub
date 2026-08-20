@@ -202,7 +202,7 @@ export default function ChangePasswordForm() {
         <button
           type="submit"
           disabled={loading || success || !!validationErrors.newPassword || !!validationErrors.confirmNewPassword}
-          className="flex items-center justify-center space-x-2 w-full px-5 py-3 rounded-xl bg-primary text-white hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs shadow-md transition-all pt-3.5"
+          className="flex items-center justify-center space-x-2 w-full px-5 py-3 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs shadow-xs transition-all pt-3.5"
         >
           {loading ? (
             <RefreshCcw className="w-3.5 h-3.5 animate-spin" />

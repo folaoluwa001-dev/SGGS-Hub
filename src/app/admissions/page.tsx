@@ -119,7 +119,7 @@ export default function Admissions() {
               
               <a
                 href={`mailto:${schoolConfig.schoolEmail}?subject=Admissions Inquiry`}
-                className="flex items-center space-x-2 px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-light font-bold text-xs shadow-md transition-all"
+                className="flex items-center space-x-2 px-6 py-3 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-bold text-xs shadow-xs transition-all"
               >
                 <Mail className="w-4 h-4" />
                 <span>Send Email Inquiry</span>

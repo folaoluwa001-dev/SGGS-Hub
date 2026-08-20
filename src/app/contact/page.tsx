@@ -174,7 +174,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-primary hover:bg-primary-light text-white font-extrabold text-sm shadow-md transition-all disabled:opacity-50"
+                  className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-sm shadow-xs transition-all disabled:opacity-50"
                 >
                   {loading ? (
                     <span>Sending...</span>

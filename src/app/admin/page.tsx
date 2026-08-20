@@ -1243,7 +1243,7 @@ export default function AdminDashboard() {
                 {/* Add CTA */}
                 <button
                   onClick={() => { resetStudentForm(); setShowStudentModal(true); }}
-                  className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all w-full sm:w-auto"
+                  className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all w-full sm:w-auto"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Register Student</span>
@@ -1388,7 +1388,7 @@ export default function AdminDashboard() {
                 
                 <button
                   onClick={() => { setSubjectForm({ id: '', name: '', description: '' }); setIsEditingSubject(false); setShowSubjectModal(true); }}
-                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Create Subject</span>
@@ -1442,7 +1442,7 @@ export default function AdminDashboard() {
                 
                 <button
                   onClick={() => setShowTokenModal(true)}
-                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
                 >
                   <KeyRound className="w-4 h-4" />
                   <span>Generate Tokens</span>
@@ -1530,7 +1530,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={triggerManualBackup}
                   disabled={loading}
-                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
+                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all disabled:opacity-50"
                 >
                   <Database className="w-4 h-4" />
                   <span>Run Manual Backup</span>
@@ -1778,7 +1778,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={handleDownloadCombinedMarksheet}
                       disabled={marksheetLoading}
-                      className="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all w-full sm:w-auto disabled:opacity-50"
+                      className="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all w-full sm:w-auto disabled:opacity-50"
                     >
                       <Download className="w-4 h-4" />
                       <span>{marksheetLoading ? 'Generating Sheet...' : 'Download Combined Marksheet'}</span>
@@ -1934,7 +1934,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
                 >
                   <Save className="w-4 h-4" />
                   <span>{isEditingStudent ? 'Save Changes' : 'Register Student'}</span>
@@ -1994,7 +1994,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Subject</span>
@@ -2025,7 +2025,9 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'single' })}
                     className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'single' ? 'bg-primary text-white' : 'text-muted-fg-custom hover:text-fg-custom'
+                      tokenForm.mode === 'single'
+                        ? 'bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent'
+                        : 'text-muted-fg-custom hover:text-fg-custom border border-transparent'
                     }`}
                   >
                     Single Student
@@ -2034,7 +2036,9 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'bulk' })}
                     className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'bulk' ? 'bg-primary text-white' : 'text-muted-fg-custom hover:text-fg-custom'
+                      tokenForm.mode === 'bulk'
+                        ? 'bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent'
+                        : 'text-muted-fg-custom hover:text-fg-custom border border-transparent'
                     }`}
                   >
                     Bulk Class Arm
@@ -2094,7 +2098,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={loading || (tokenForm.mode === 'single' && !tokenForm.studentId)}
-                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
+                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all disabled:opacity-50"
                 >
                   <KeyRound className="w-4 h-4" />
                   <span>Generate Now</span>
@@ -2148,7 +2152,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setBulkUploadResult(null)}
-                className="px-6 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all"
+                className="px-6 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
               >
                 Close
               </button>

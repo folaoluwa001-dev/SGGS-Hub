@@ -68,7 +68,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
               <Link
                 href="/login"
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-light text-white font-bold text-sm shadow-md shadow-primary/20 hover:shadow-lg transition-all"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-bold text-sm shadow-xs transition-all"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Portal Login</span>
@@ -101,7 +101,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-4 py-2.5 rounded-xl text-sm font-bold ${
                     isActive
-                      ? 'bg-secondary text-white'
+                      ? 'bg-secondary/15 text-secondary dark:text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom'
                   }`}
                 >
@@ -113,7 +113,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-xl bg-primary text-white font-bold shadow-md shadow-primary/10"
+                className="flex items-center justify-center space-x-2 w-full px-4 py-3 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-bold shadow-xs transition-all"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Portal Login</span>

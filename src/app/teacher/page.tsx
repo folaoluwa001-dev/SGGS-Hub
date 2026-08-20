@@ -758,7 +758,7 @@ export default function TeacherDashboard() {
                     </div>
 
                     <div className="pt-2">
-                      <label className="flex items-center justify-center space-x-2 w-full px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md cursor-pointer transition-all">
+                      <label className="flex items-center justify-center space-x-2 w-full px-6 py-3 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs cursor-pointer transition-all">
                         <Upload className="w-4 h-4" />
                         <span>Upload Spreadsheet file</span>
                         <input
@@ -842,7 +842,7 @@ export default function TeacherDashboard() {
                     <button
                       type="submit"
                       disabled={loading || !sheetUrl}
-                      className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
+                      className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all disabled:opacity-50"
                     >
                       {loading ? (
                         <>
@@ -1027,7 +1027,7 @@ export default function TeacherDashboard() {
                               <td className="p-4 text-center">
                                 <button
                                   onClick={() => handleManualGradeSubmit(student.id)}
-                                  className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-light text-white text-xs font-extrabold transition-all"
+                                  className="px-3.5 py-1.5 rounded-lg bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light text-xs font-extrabold transition-all"
                                 >
                                   Save Score
                                 </button>

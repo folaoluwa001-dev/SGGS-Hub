@@ -742,7 +742,7 @@ export default function BursarDashboard() {
                   <button
                     type="submit"
                     disabled={loading || !selectedStudentId || !amountPaid}
-                    className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
+                    className="flex items-center justify-center space-x-2 w-full px-6 py-3.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all disabled:opacity-50"
                   >
                     {loading ? (
                       <span>Logging payment...</span>
@@ -869,7 +869,7 @@ export default function BursarDashboard() {
                                   setSelectedCategory(debtor.category);
                                   setActiveTab('log-payments');
                                 }}
-                                className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-wider transition-all"
+                                className="px-3 py-1.5 rounded-lg bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light text-[10px] font-black uppercase tracking-wider transition-all"
                               >
                                 Log Payment
                               </button>
@@ -897,7 +897,7 @@ export default function BursarDashboard() {
                 <button
                   onClick={handleSaveFeeConfigs}
                   disabled={savingFees || loading}
-                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
+                  className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all disabled:opacity-50"
                 >
                   {savingFees ? (
                     <span>Saving...</span>
