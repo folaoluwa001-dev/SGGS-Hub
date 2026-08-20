@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { schoolConfig } from '../../../config/school.config';
 import { useTheme } from '@/components/Providers';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { 
   Users, BookOpen, Key, History, Database, LogOut, LayoutDashboard, 
   Plus, Edit, Trash2, Search, Filter, ShieldAlert, ShieldCheck, Download, RefreshCcw, 
-  Save, KeyRound, Calendar, Moon, Sun, ToggleLeft, ToggleRight, Lock
+  Save, KeyRound, Calendar, Lock
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 import { 
@@ -18,7 +19,7 @@ import {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   
   // App state
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet'>('overview');
@@ -881,6 +882,7 @@ export default function AdminDashboard() {
 
           <div className="flex items-center space-x-3">
             <span className="text-[10px] text-slate-400 font-bold uppercase hidden sm:block">Academic session: 2025/2026</span>
+            <ThemeToggle />
             <button 
               onClick={handleLogout}
               className="md:hidden p-2 rounded-lg hover:bg-danger/10 text-danger"

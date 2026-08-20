@@ -4,15 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { schoolConfig } from '../../../config/school.config';
 import { useTheme } from '@/components/Providers';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Users, BookOpen, FileSpreadsheet, RefreshCw, LogOut,
-  Download, Upload, Save, CheckCircle2, ShieldAlert, Moon, Sun, Search, AlertCircle, Lock
+  Download, Upload, Save, CheckCircle2, ShieldAlert, Search, AlertCircle, Lock
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 
 export default function TeacherDashboard() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'manual' | 'settings'>('overview');
   const [user, setUser] = useState<any>(null);
@@ -432,7 +433,7 @@ export default function TeacherDashboard() {
             {activeTab === 'settings' && 'Account Settings'}
           </h2>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <span className="text-[10px] text-slate-400 font-bold uppercase">Class:</span>
               <select
@@ -450,6 +451,8 @@ export default function TeacherDashboard() {
                   .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+
+            <ThemeToggle />
 
             <button
               onClick={handleLogout}

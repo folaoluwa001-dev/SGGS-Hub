@@ -4,15 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { schoolConfig } from '../../../config/school.config';
 import { useTheme } from '@/components/Providers';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Users, CreditCard, DollarSign, LogOut, Download, Plus,
-  Printer, Search, Filter, ShieldCheck, AlertCircle, Moon, Sun, RefreshCw, FileText, Lock, Sliders
+  Printer, Search, Filter, ShieldCheck, AlertCircle, RefreshCw, FileText, Lock, Sliders
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 
 export default function BursarDashboard() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'log-payments' | 'debtors' | 'fees-structure' | 'settings'>('overview');
   const [user, setUser] = useState<any>(null);
@@ -381,6 +382,7 @@ export default function BursarDashboard() {
 
           <div className="flex items-center space-x-3">
             <span className="text-[10px] text-slate-400 font-bold uppercase hidden sm:block">Ledger: Manual tracking only</span>
+            <ThemeToggle />
             <button
               onClick={handleLogout}
               className="md:hidden p-2 rounded-lg hover:bg-danger/10 text-danger"

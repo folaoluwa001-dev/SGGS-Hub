@@ -34,7 +34,6 @@ export default function RootLayout({
 }>) {
   const styleString = `
     :root {
-      color-scheme: dark;
       --primary: ${schoolConfig.schoolColors.primary};
       --primary-light: ${schoolConfig.schoolColors.primaryLight};
       --secondary: ${schoolConfig.schoolColors.secondary};
@@ -43,44 +42,36 @@ export default function RootLayout({
       --success: ${schoolConfig.schoolColors.success};
       --warning: ${schoolConfig.schoolColors.warning};
       --danger: ${schoolConfig.schoolColors.danger};
-      --background: #0b111e;
-      --foreground: #ffffff;
-      --card: #151f32;
-      --card-foreground: #ffffff;
-      --popover: #151f32;
-      --popover-foreground: #ffffff;
-      --muted: #1e2e4a;
-      --muted-foreground: #cbd5e1;
-      --border: #1e2e4a;
-      --input: #1e2e4a;
-      --ring: var(--secondary);
-    }
-    .dark {
-      color-scheme: dark;
-      --background: #0b111e;
-      --foreground: #ffffff;
-      --card: #151f32;
-      --card-foreground: #ffffff;
-      --popover: #151f32;
-      --popover-foreground: #ffffff;
-      --muted: #1e2e4a;
-      --muted-foreground: #cbd5e1;
-      --border: #1e2e4a;
-      --input: #1e2e4a;
-      --ring: var(--secondary);
     }
   `;
 
+  const themeInitScript = `
+    (function() {
+      try {
+        var stored = localStorage.getItem('sggs-theme');
+        var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = stored ? stored : (systemDark ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.style.colorScheme = 'light';
+        }
+      } catch (e) {}
+    })();
+  `;
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="dark" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <style dangerouslySetInnerHTML={{ __html: styleString }} />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="theme-color" content={schoolConfig.schoolColors.primary} />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="dark bg-[#0b111e] text-[#f8fafc] antialiased">
+      <body className="antialiased bg-bg-custom text-fg-custom">
         <Providers>
           <PWARegister />
           {children}

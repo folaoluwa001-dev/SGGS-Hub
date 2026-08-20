@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { schoolConfig } from '../../config/school.config';
 import { useTheme } from './Providers';
-import { Sun, Moon, Menu, X, LogIn, Award } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+import { Menu, X, LogIn, Award } from 'lucide-react';
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -33,7 +34,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
               />
               <div>
-                <span className="block font-black text-sm sm:text-base tracking-wider text-white leading-none">
+                <span className="block font-black text-sm sm:text-base tracking-wider text-primary dark:text-white leading-none">
                   {schoolConfig.schoolName.split(' ')[0]} {schoolConfig.schoolName.split(' ')[1] || ''}
                 </span>
                 <span className="block font-medium text-[9px] sm:text-[10px] text-secondary tracking-widest leading-none mt-1">
@@ -53,7 +54,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                     className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                       isActive
                         ? 'bg-secondary/15 text-secondary'
-                        : 'text-slate-300 hover:bg-muted-custom hover:text-white'
+                        : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
                     }`}
                   >
                     {link.name}
@@ -62,8 +63,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               })}
             </nav>
 
-            {/* Actions (Login) */}
+            {/* Actions (Theme Toggle & Login) */}
             <div className="hidden md:flex items-center space-x-3">
+              <ThemeToggle />
               <Link
                 href="/login"
                 className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-light text-white font-bold text-sm shadow-md shadow-primary/20 hover:shadow-lg transition-all"
@@ -75,9 +77,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center space-x-2">
+              <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-1.5 rounded-lg bg-muted-custom text-white"
+                className="p-1.5 rounded-lg bg-muted-custom text-fg-custom"
                 aria-label="Toggle Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -99,14 +102,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   className={`block px-4 py-2.5 rounded-xl text-sm font-bold ${
                     isActive
                       ? 'bg-secondary text-white'
-                      : 'text-slate-300 hover:bg-muted-custom hover:text-white'
+                      : 'text-muted-fg-custom hover:bg-muted-custom'
                   }`}
                 >
                   {link.name}
                 </Link>
               );
             })}
-            <div className="pt-4 border-t border-border-custom">
+            <div className="pt-4 border-t border-border-custom flex flex-col gap-2">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}

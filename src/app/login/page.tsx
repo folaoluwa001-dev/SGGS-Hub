@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { schoolConfig } from '../../../config/school.config';
 import { useTheme } from '@/components/Providers';
-import { ShieldCheck, User, Lock, Key, Moon, Sun, ArrowRight, RefreshCw } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { ShieldCheck, User, Lock, Key, ArrowRight, RefreshCw } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -84,6 +85,7 @@ export default function Login() {
           />
           <span className="font-bold text-xs tracking-wider">SGGS Portal</span>
         </Link>
+        <ThemeToggle />
       </header>
 
       {/* Main Login Card */}
