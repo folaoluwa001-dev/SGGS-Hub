@@ -129,7 +129,7 @@ export default function Contact() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-sm focus:outline-hidden focus:ring-2 focus:ring-ring-custom transition-all"
-                      placeholder="John Doe"
+                      placeholder="Olusola Adeoye"
                     />
                   </div>
                   <div className="space-y-1.5">

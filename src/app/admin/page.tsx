@@ -6,16 +6,16 @@ import Link from 'next/link';
 import { schoolConfig } from '../../../config/school.config';
 import { useTheme } from '@/components/Providers';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { 
-  Users, BookOpen, Key, History, Database, LogOut, LayoutDashboard, 
-  Plus, Edit, Trash2, Search, Filter, ShieldAlert, ShieldCheck, Download, RefreshCcw, 
+import {
+  Users, BookOpen, Key, History, Database, LogOut, LayoutDashboard,
+  Plus, Edit, Trash2, Search, Filter, ShieldAlert, ShieldCheck, Download, RefreshCcw,
   Save, KeyRound, Calendar, Lock,
   PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
-import { 
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, PieChart, Pie, Cell 
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, PieChart, Pie, Cell
 } from 'recharts';
 
 export default function AdminDashboard() {
@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
   // Data lists
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
     errors: string[];
     count: number;
   } | null>(null);
-  
+
   // Combined Marksheet state
   const [selectedClassCategory, setSelectedClassCategory] = useState('');
   const [selectedMarksheetTermId, setSelectedMarksheetTermId] = useState('');
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   const [marksheetError, setMarksheetError] = useState<string | null>(null);
   const [marksheetSuccess, setMarksheetSuccess] = useState<string | null>(null);
   const [marksheetUploadErrors, setMarksheetUploadErrors] = useState<string[]>([]);
-  
+
   // Modals state
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [studentForm, setStudentForm] = useState({
@@ -301,14 +301,14 @@ export default function AdminDashboard() {
     try {
       const url = `/api/admin/combined-marksheet?classCategory=${selectedClassCategory}&termId=${selectedMarksheetTermId}&sessionId=${selectedMarksheetSessionId}`;
       const res = await fetch(url);
-      
+
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || 'Failed to download marksheet.');
       }
 
       const blob = await res.blob();
-      
+
       // Get filename from header or build fallback
       const disposition = res.headers.get('content-disposition');
       let filename = `${selectedClassCategory}_Marksheet.xlsx`;
@@ -396,9 +396,9 @@ export default function AdminDashboard() {
       'Parent Email',
       'Home Address'
     ];
-    
+
     // Sort students by admission number in ascending order naturally
-    const sortedStudentsForExport = [...students].sort((a, b) => 
+    const sortedStudentsForExport = [...students].sort((a, b) =>
       String(a.admissionNumber || '').localeCompare(String(b.admissionNumber || ''), undefined, { numeric: true, sensitivity: 'base' })
     );
 
@@ -422,7 +422,7 @@ export default function AdminDashboard() {
       const classExample = classes[0]?.name || 'JSS1';
       rows.push([
         'SGGS/2026/1001',
-        'John Doe',
+        'Olusola Adeoye',
         'Male',
         '2012-05-15',
         classExample,
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
 
     const csvContent = [
       '\uFEFF' + headers.join(','),
-      ...rows.map(row => 
+      ...rows.map(row =>
         row.map(val => {
           const escaped = String(val).includes(',') ? `"${val}"` : val;
           return escaped;
@@ -506,7 +506,7 @@ export default function AdminDashboard() {
     try {
       const method = isEditingStudent ? 'PUT' : 'POST';
       const url = isEditingStudent ? `/api/students/${studentForm.id}` : '/api/students';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
   const activeTokensCount = tokens.filter(t => t.status === 'Active').length;
   const consumedTokensCount = tokens.filter(t => t.status === 'Consumed').length;
   const expiredTokensCount = tokens.filter(t => t.status === 'Expired').length;
-  
+
   const tokenPieData = [
     { name: 'Active', value: activeTokensCount, color: schoolConfig.schoolColors.accent },
     { name: 'Consumed', value: consumedTokensCount, color: schoolConfig.schoolColors.secondary },
@@ -723,7 +723,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen bg-bg-custom text-fg-custom overflow-hidden transition-colors">
-      
+
       {/* MOBILE DRAWER BACKDROP & SIDEBAR */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden animate-in fade-in duration-200">
@@ -757,11 +757,10 @@ export default function AdminDashboard() {
               <nav className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-260px)]">
                 <button
                   onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'overview'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'overview'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
                   <span>Overview Analytics</span>
@@ -769,11 +768,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('students'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'students'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'students'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <Users className="w-4 h-4 flex-shrink-0" />
                   <span>Manage Students</span>
@@ -781,11 +779,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('subjects'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'subjects'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'subjects'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <BookOpen className="w-4 h-4 flex-shrink-0" />
                   <span>Manage Subjects</span>
@@ -793,11 +790,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('tokens'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'tokens'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'tokens'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <Key className="w-4 h-4 flex-shrink-0" />
                   <span>Token Management</span>
@@ -805,11 +801,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('backups'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'backups'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'backups'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <Database className="w-4 h-4 flex-shrink-0" />
                   <span>System Backup</span>
@@ -817,11 +812,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('marksheet'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'marksheet'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'marksheet'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <Download className="w-4 h-4 flex-shrink-0" />
                   <span>Combined Marksheets</span>
@@ -829,11 +823,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('audit'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'audit'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'audit'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <History className="w-4 h-4 flex-shrink-0" />
                   <span>Audit Trail</span>
@@ -841,11 +834,10 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'settings'
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings'
                       ? 'bg-secondary/15 text-secondary'
                       : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-                  }`}
+                    }`}
                 >
                   <Lock className="w-4 h-4 flex-shrink-0" />
                   <span>Change Password</span>
@@ -873,15 +865,14 @@ export default function AdminDashboard() {
 
       {/* DESKTOP COLLAPSIBLE SIDEBAR */}
       <aside
-        className={`bg-card-custom border-r border-border-custom flex-col justify-between hidden md:flex transition-all duration-300 ease-in-out ${
-          sidebarCollapsed ? 'w-20' : 'w-64'
-        }`}
+        className={`bg-card-custom border-r border-border-custom flex-col justify-between hidden md:flex transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-20' : 'w-64'
+          }`}
       >
         <div className={`p-4 ${sidebarCollapsed ? 'space-y-6' : 'p-6 space-y-8'}`}>
           {/* Brand header & expand/collapse toggle */}
           <div className={`flex items-center ${sidebarCollapsed ? 'flex-col space-y-3' : 'justify-between'}`}>
             <div className="flex items-center space-x-3 overflow-hidden">
-              <div 
+              <div
                 className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-xs"
                 dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
               />
@@ -909,11 +900,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('overview')}
               title={sidebarCollapsed ? 'Overview Analytics' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'overview'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'overview'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Overview Analytics</span>}
@@ -922,11 +912,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('students')}
               title={sidebarCollapsed ? 'Manage Students' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'students'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'students'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <Users className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Manage Students</span>}
@@ -935,11 +924,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('subjects')}
               title={sidebarCollapsed ? 'Manage Subjects' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'subjects'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'subjects'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <BookOpen className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Manage Subjects</span>}
@@ -948,11 +936,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('tokens')}
               title={sidebarCollapsed ? 'Token Management' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'tokens'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'tokens'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <Key className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Token Management</span>}
@@ -961,11 +948,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('backups')}
               title={sidebarCollapsed ? 'System Backup' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'backups'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'backups'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <Database className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>System Backup</span>}
@@ -974,11 +960,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('marksheet')}
               title={sidebarCollapsed ? 'Combined Marksheets' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'marksheet'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'marksheet'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <Download className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Combined Marksheets</span>}
@@ -987,11 +972,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('audit')}
               title={sidebarCollapsed ? 'Audit Trail' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'audit'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'audit'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <History className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Audit Trail</span>}
@@ -1000,11 +984,10 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('settings')}
               title={sidebarCollapsed ? 'Change Password' : undefined}
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'settings'
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings'
                   ? 'bg-secondary/15 text-secondary'
                   : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
-              }`}
+                }`}
             >
               <Lock className="w-4 h-4 flex-shrink-0" />
               {!sidebarCollapsed && <span>Change Password</span>}
@@ -1044,7 +1027,7 @@ export default function AdminDashboard() {
 
       {/* MAIN CONTAINER */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        
+
         {/* TOP BAR / PHONE LAYOUT NAV */}
         <header className="h-16 bg-card-custom border-b border-border-custom px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -1083,7 +1066,7 @@ export default function AdminDashboard() {
           <div className="flex items-center space-x-2 sm:space-x-3">
             <span className="text-[10px] text-muted-fg-custom font-bold uppercase hidden lg:block">Academic session: 2025/2026</span>
             <ThemeToggle />
-            <button 
+            <button
               onClick={handleLogout}
               className="md:hidden p-2 rounded-xl border border-border-custom hover:bg-danger/10 text-danger"
               title="Logout"
@@ -1167,7 +1150,7 @@ export default function AdminDashboard() {
                 {/* Token Stats Pie Chart */}
                 <div className="lg:col-span-4 p-6 rounded-2xl bg-card-custom border border-border-custom space-y-4 flex flex-col justify-between">
                   <h3 className="font-extrabold text-xs uppercase tracking-wider text-primary dark:text-white">Token Access Breakdown</h3>
-                  
+
                   <div className="h-44 sm:h-52 w-full flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -1226,7 +1209,7 @@ export default function AdminDashboard() {
                       className="w-full pl-9 pr-4 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-semibold focus:outline-hidden"
                     />
                   </div>
-                  
+
                   <div className="relative w-full sm:w-auto">
                     <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                     <select
@@ -1256,7 +1239,7 @@ export default function AdminDashboard() {
                   <h4 className="text-xs font-black uppercase text-primary dark:text-white">Bulk Student Enrollment</h4>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Download spreadsheet template or upload student lists (.csv, .xlsx)</p>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                   <button
                     onClick={handleDownloadTemplate}
@@ -1285,7 +1268,7 @@ export default function AdminDashboard() {
                   <h4 className="text-xs font-black uppercase text-primary dark:text-white">Bulk Download Report Cards</h4>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Generate ZIP file of all report cards for the selected class arm</p>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                   <select
                     value={bulkClassId}
@@ -1385,7 +1368,7 @@ export default function AdminDashboard() {
               {/* Header */}
               <div className="flex items-center justify-between p-4 rounded-2xl bg-card-custom border border-border-custom">
                 <span className="text-xs text-muted-fg-custom font-semibold">Define or remove curriculum subjects dynamically.</span>
-                
+
                 <button
                   onClick={() => { setSubjectForm({ id: '', name: '', description: '' }); setIsEditingSubject(false); setShowSubjectModal(true); }}
                   className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
@@ -1439,7 +1422,7 @@ export default function AdminDashboard() {
               {/* Header tool bar */}
               <div className="flex items-center justify-between p-4 rounded-2xl bg-card-custom border border-border-custom">
                 <span className="text-xs text-muted-fg-custom font-semibold">Tokens restrict access to result checks. Maximum usage limit is 3.</span>
-                
+
                 <button
                   onClick={() => setShowTokenModal(true)}
                   className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent dark:hover:bg-primary-light font-extrabold text-xs shadow-xs transition-all"
@@ -1477,7 +1460,7 @@ export default function AdminDashboard() {
                           const isExpired = token.status === 'Expired';
                           const isConsumed = token.status === 'Consumed';
                           const isActive = token.status === 'Active';
-                          
+
                           let statusBg = 'bg-muted-custom text-muted-fg-custom';
                           if (isActive) statusBg = 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
                           else if (isConsumed) statusBg = 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
@@ -1526,7 +1509,7 @@ export default function AdminDashboard() {
               {/* Actions Header */}
               <div className="flex items-center justify-between p-4 rounded-2xl bg-card-custom border border-border-custom">
                 <span className="text-xs text-muted-fg-custom font-semibold">Store system copies. Backups copy SQLite database file. Restoring will overwrite existing records.</span>
-                
+
                 <button
                   onClick={triggerManualBackup}
                   disabled={loading}
@@ -1551,9 +1534,8 @@ export default function AdminDashboard() {
                           <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary dark:text-secondary font-bold text-[9px] uppercase">
                             {bk.backupType}
                           </span>
-                          <span className={`text-[10px] font-bold ${
-                            bk.status === 'Success' ? 'text-emerald-500' : 'text-danger'
-                          }`}>
+                          <span className={`text-[10px] font-bold ${bk.status === 'Success' ? 'text-emerald-500' : 'text-danger'
+                            }`}>
                             {bk.status}
                           </span>
                         </div>
@@ -1839,7 +1821,7 @@ export default function AdminDashboard() {
                     value={studentForm.fullName}
                     onChange={(e) => setStudentForm({ ...studentForm, fullName: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-sm focus:outline-hidden focus:ring-2 focus:ring-ring-custom"
-                    placeholder="e.g. John Doe"
+                    placeholder="e.g. Olusola Adeoye"
                   />
                 </div>
               </div>
@@ -2024,22 +2006,20 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'single' })}
-                    className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'single'
+                    className={`py-2 rounded-lg text-xs font-bold transition-all ${tokenForm.mode === 'single'
                         ? 'bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent'
                         : 'text-muted-fg-custom hover:text-fg-custom border border-transparent'
-                    }`}
+                      }`}
                   >
                     Single Student
                   </button>
                   <button
                     type="button"
                     onClick={() => setTokenForm({ ...tokenForm, mode: 'bulk' })}
-                    className={`py-2 rounded-lg text-xs font-bold transition-all ${
-                      tokenForm.mode === 'bulk'
+                    className={`py-2 rounded-lg text-xs font-bold transition-all ${tokenForm.mode === 'bulk'
                         ? 'bg-transparent border border-primary text-primary hover:bg-primary/5 dark:bg-primary dark:text-white dark:border-transparent'
                         : 'text-muted-fg-custom hover:text-fg-custom border border-transparent'
-                    }`}
+                      }`}
                   >
                     Bulk Class Arm
                   </button>
