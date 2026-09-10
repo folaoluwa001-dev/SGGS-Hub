@@ -28,6 +28,13 @@ interface TermSessionInfo {
   name: string;
 }
 
+interface AttendanceInfo {
+  daysPresent: number;
+  totalDays: number;
+  percentage: number;
+  remark?: string;
+}
+
 export default function ResultChecker() {
   const [formData, setFormData] = useState({ studentId: '', tokenString: '', visitorName: '' });
   const [loading, setLoading] = useState(false);
@@ -37,6 +44,7 @@ export default function ResultChecker() {
     results: ResultRow[];
     term: TermSessionInfo;
     session: TermSessionInfo;
+    attendance?: AttendanceInfo | null;
     usageCount: number;
     maxUsage: number;
   } | null>(null);
@@ -261,6 +269,7 @@ export default function ResultChecker() {
                   <div className="flex"><span className="w-28 font-bold text-slate-300">Academic Session:</span><span className="font-semibold text-slate-200">{reportData.session.name}</span></div>
                   <div className="flex"><span className="w-28 font-bold text-slate-300">Academic Term:</span><span className="font-semibold text-slate-200">{reportData.term.name}</span></div>
                   <div className="flex"><span className="w-28 font-bold text-slate-300">Parent/Guardian:</span><span className="font-semibold text-slate-200">{reportData.student.parentName}</span></div>
+                  <div className="flex"><span className="w-28 font-bold text-slate-300">Term Attendance:</span><span className="font-bold text-secondary print:text-black">{reportData.attendance ? `${reportData.attendance.percentage}% (${reportData.attendance.daysPresent}/${reportData.attendance.totalDays} days)` : 'Not Recorded'}</span></div>
                 </div>
               </div>
 
@@ -314,6 +323,12 @@ export default function ResultChecker() {
                     <span className="font-bold text-slate-300">Overall Average Score:</span>
                     <span className="font-extrabold text-secondary">{averageScore}%</span>
                   </div>
+                  {reportData.attendance && (
+                    <div className="flex justify-between text-xs">
+                      <span className="font-bold text-slate-300">Term Attendance Rate:</span>
+                      <span className="font-extrabold text-emerald-400 print:text-black">{reportData.attendance.percentage}%</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Grade System Guide */}

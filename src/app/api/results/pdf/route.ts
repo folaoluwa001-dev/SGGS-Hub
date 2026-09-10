@@ -178,8 +178,23 @@ export async function GET(request: Request) {
       remark: r.remark,
     }));
 
-    // 5. Generate PDF buffer
-    const pdfBuffer = await generateReportCardPDF(formattedStudent, formattedResults, "96%");
+    // 5. Fetch student's recorded attendance percentage for this term & session
+    const attendanceRecord = await db.attendance.findUnique({
+      where: {
+        studentId_termId_sessionId: {
+          studentId: student.id,
+          termId: term.id,
+          sessionId: sessionRecord.id,
+        },
+      },
+    });
+
+    const attendanceString = attendanceRecord
+      ? `${attendanceRecord.percentage}%`
+      : '95%';
+
+    // 6. Generate PDF buffer
+    const pdfBuffer = await generateReportCardPDF(formattedStudent, formattedResults, attendanceString);
 
     // 6. Return PDF Stream
     return new Response(new Uint8Array(pdfBuffer), {

@@ -52,6 +52,7 @@ model Student {
   results            Result[]
   payments           Payment[]
   tokens             Token[]
+  attendances        Attendance[]
 
   @@index([classId])
   @@index([sessionId])
@@ -64,6 +65,7 @@ model Class {
   students      Student[]
   feeCategories FeeCategory[]
   sheetSyncLogs GoogleSheetSyncLog[]
+  attendances   Attendance[]
 }
 
 model Subject {
@@ -78,8 +80,9 @@ model Session {
   id       String    @id @default(uuid())
   name     String    @unique // e.g. 2025/2026
   active   Boolean   @default(false)
-  students Student[]
-  results  Result[]
+  students    Student[]
+  results     Result[]
+  attendances Attendance[]
 }
 
 model Term {
@@ -88,6 +91,7 @@ model Term {
   active         Boolean   @default(false)
   resumptionDate DateTime?
   results        Result[]
+  attendances    Attendance[]
 }
 
 model Result {
@@ -228,4 +232,28 @@ model GoogleSheetSyncLog {
   @@index([teacherId])
   @@index([subjectId])
   @@index([classId])
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  termId      String
+  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  daysPresent Int
+  totalDays   Int
+  percentage  Float
+  remark      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, termId, sessionId])
+  @@index([studentId])
+  @@index([classId])
+  @@index([sessionId])
+  @@index([termId])
 }

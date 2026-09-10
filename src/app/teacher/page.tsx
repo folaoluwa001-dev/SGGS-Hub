@@ -8,7 +8,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Users, BookOpen, FileSpreadsheet, RefreshCw, LogOut,
   Download, Upload, Save, CheckCircle2, ShieldAlert, Search, AlertCircle, Lock,
-  PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight
+  PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight,
+  CalendarCheck, Check, Sparkles, Sliders, Calendar
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 
@@ -18,10 +19,17 @@ export default function TeacherDashboard() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'manual' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'manual' | 'sync' | 'settings'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Attendance states
+  const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { daysPresent: string; totalDays: string; remark: string }>>({});
+  const [defaultTotalDays, setDefaultTotalDays] = useState('60');
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceSaving, setAttendanceSaving] = useState(false);
+  const [attendanceMsg, setAttendanceMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Data lists
   const [students, setStudents] = useState<any[]>([]);
@@ -84,15 +92,132 @@ export default function TeacherDashboard() {
     } catch (e) { console.error(e); }
   };
 
+  const fetchClassAttendance = async (studentList = students) => {
+    if (!selectedClassId || !selectedTermId || !selectedSessionId) return;
+    setAttendanceLoading(true);
+    setAttendanceMsg(null);
+    try {
+      const url = `/api/attendance?classId=${selectedClassId}&termId=${selectedTermId}&sessionId=${selectedSessionId}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const map: Record<string, { daysPresent: string; totalDays: string; remark: string }> = {};
+      studentList.forEach(s => {
+        map[s.id] = { daysPresent: '', totalDays: defaultTotalDays || '60', remark: '' };
+      });
+
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach((r: any) => {
+          map[r.studentId] = {
+            daysPresent: String(r.daysPresent),
+            totalDays: String(r.totalDays),
+            remark: r.remark || '',
+          };
+        });
+        if (data[0]?.totalDays) {
+          setDefaultTotalDays(String(data[0].totalDays));
+        }
+      }
+      setAttendanceRecords(map);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
+
+  const handleSaveAttendance = async () => {
+    if (!selectedClassId || !selectedTermId || !selectedSessionId) {
+      setAttendanceMsg({ type: 'error', text: 'Please select class, session, and term.' });
+      return;
+    }
+    if (students.length === 0) {
+      setAttendanceMsg({ type: 'error', text: 'No students in this class to record attendance for.' });
+      return;
+    }
+
+    setAttendanceSaving(true);
+    setAttendanceMsg(null);
+    try {
+      const records = students.map(s => {
+        const rec = attendanceRecords[s.id] || { daysPresent: '0', totalDays: defaultTotalDays || '60', remark: '' };
+        const parsedTotal = parseInt(rec.totalDays, 10) || parseInt(defaultTotalDays, 10) || 60;
+        const parsedDays = parseInt(rec.daysPresent, 10) || 0;
+        return {
+          studentId: s.id,
+          classId: selectedClassId,
+          sessionId: selectedSessionId,
+          termId: selectedTermId,
+          daysPresent: parsedDays,
+          totalDays: parsedTotal,
+          remark: rec.remark || null,
+        };
+      });
+
+      const res = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ records }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save attendance records.');
+
+      setAttendanceMsg({
+        type: 'success',
+        text: `Attendance saved successfully for ${data.count} student(s)! Percentage is now automatically reflected on their report cards.`,
+      });
+      await fetchClassAttendance();
+    } catch (err: any) {
+      setAttendanceMsg({ type: 'error', text: err.message || 'Error saving attendance.' });
+    } finally {
+      setAttendanceSaving(false);
+    }
+  };
+
+  const applyDefaultTotalDaysToAll = () => {
+    const parsed = parseInt(defaultTotalDays, 10);
+    if (isNaN(parsed) || parsed <= 0) {
+      alert('Please enter a valid positive number for total school days.');
+      return;
+    }
+    setAttendanceRecords(prev => {
+      const next = { ...prev };
+      students.forEach(s => {
+        next[s.id] = {
+          ...(next[s.id] || { daysPresent: '', remark: '' }),
+          totalDays: String(parsed),
+        };
+      });
+      return next;
+    });
+  };
+
+  const markAllPresent = () => {
+    setAttendanceRecords(prev => {
+      const next = { ...prev };
+      students.forEach(s => {
+        const curTotal = next[s.id]?.totalDays || defaultTotalDays || '60';
+        next[s.id] = {
+          ...(next[s.id] || { remark: '' }),
+          daysPresent: curTotal,
+          totalDays: curTotal,
+        };
+      });
+      return next;
+    });
+  };
+
   const fetchClassStudents = async () => {
     try {
       const res = await fetch(`/api/students?classId=${selectedClassId}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setStudents(data);
-        // If tab is manual grading, fetch existing results to prefill form inputs
         if (activeTab === 'manual') {
           fetchClassGrades(data);
+        } else if (activeTab === 'attendance') {
+          fetchClassAttendance(data);
         }
       }
     } catch (e) { console.error(e); }
@@ -182,6 +307,14 @@ export default function TeacherDashboard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedClassId, selectedSubjectId, selectedTermId, selectedSessionId]);
+
+  // Fetch attendance when options are modified in attendance tab
+  useEffect(() => {
+    if (activeTab === 'attendance' && selectedClassId && selectedTermId && selectedSessionId) {
+      fetchClassAttendance();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, selectedClassId, selectedTermId, selectedSessionId]);
 
   // Download template triggers
   const downloadTemplate = () => {
@@ -378,6 +511,18 @@ export default function TeacherDashboard() {
                 </button>
 
                 <button
+                  onClick={() => { setActiveTab('attendance'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'attendance'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <CalendarCheck className="w-4 h-4 flex-shrink-0" />
+                  <span>Attendance Records</span>
+                </button>
+
+                <button
                   onClick={() => { setActiveTab('sync'); setMobileMenuOpen(false); }}
                   className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                     activeTab === 'sync'
@@ -482,6 +627,19 @@ export default function TeacherDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('attendance')}
+              title={sidebarCollapsed ? 'Attendance Records' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'attendance'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
+            >
+              <CalendarCheck className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Attendance Records</span>}
+            </button>
+
+            <button
               onClick={() => setActiveTab('sync')}
               title={sidebarCollapsed ? 'Spreadsheet Grade Upload' : undefined}
               className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
@@ -580,6 +738,7 @@ export default function TeacherDashboard() {
 
             <h2 className="text-sm font-black text-primary dark:text-white uppercase hidden sm:block">
               {activeTab === 'overview' && 'Student Directory & Class Lists'}
+              {activeTab === 'attendance' && 'Student Attendance Recording'}
               {activeTab === 'sync' && 'Spreadsheet Grade Upload & Sync'}
               {activeTab === 'manual' && 'Manual Grade Book Overrides'}
               {activeTab === 'settings' && 'Account Settings'}
@@ -915,6 +1074,346 @@ export default function TeacherDashboard() {
               </div>
             </div>
           )}
+
+          {/* ATTENDANCE RECORD TAB */}
+          {activeTab === 'attendance' && (() => {
+            const selectedClassRecord = classes.find(c => c.id === selectedClassId);
+            const selectedSessionRecord = sessions.find(s => s.id === selectedSessionId);
+            const selectedTermRecord = terms.find(t => t.id === selectedTermId);
+
+            // Compute summary statistics
+            let totalPctSum = 0;
+            let recordedCount = 0;
+            students.forEach(s => {
+              const rec = attendanceRecords[s.id];
+              if (rec && rec.daysPresent !== '') {
+                const pDays = parseInt(rec.daysPresent, 10) || 0;
+                const tDays = parseInt(rec.totalDays, 10) || parseInt(defaultTotalDays, 10) || 60;
+                if (tDays > 0) {
+                  totalPctSum += Math.min(100, (pDays / tDays) * 100);
+                  recordedCount++;
+                }
+              }
+            });
+            const classAvgAttendance = recordedCount > 0 ? (totalPctSum / recordedCount).toFixed(1) : '0.0';
+
+            return (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                {/* Header Banner */}
+                <div className="p-6 rounded-3xl bg-gradient-to-r from-primary/10 via-card-custom to-secondary/10 border border-border-custom shadow-xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <CalendarCheck className="w-5 h-5 text-secondary" />
+                        <h3 className="text-base font-black text-primary dark:text-white uppercase tracking-wider">
+                          Student Attendance Recording
+                        </h3>
+                      </div>
+                      <p className="text-xs text-muted-fg-custom font-medium max-w-2xl">
+                        Record termly attendance days per student. The calculated attendance percentage will automatically be reflected on their official term report card.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <div className="px-4 py-2 rounded-2xl bg-card-custom border border-border-custom text-center shadow-xs">
+                        <span className="block text-[9px] uppercase font-extrabold text-slate-400">Class Average</span>
+                        <span className="block text-sm font-black text-secondary">{classAvgAttendance}%</span>
+                      </div>
+                      <div className="px-4 py-2 rounded-2xl bg-card-custom border border-border-custom text-center shadow-xs">
+                        <span className="block text-[9px] uppercase font-extrabold text-slate-400">Students</span>
+                        <span className="block text-sm font-black text-primary dark:text-white">{students.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notifications & Feedback */}
+                {attendanceMsg && (
+                  <div className={`p-4 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs ${
+                    attendanceMsg.type === 'success'
+                      ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/25'
+                      : 'bg-danger/10 text-danger border border-danger/25'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      {attendanceMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                      <span>{attendanceMsg.text}</span>
+                    </div>
+                    <button onClick={() => setAttendanceMsg(null)} className="p-1 hover:opacity-75">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Configuration Toolbar */}
+                <div className="p-6 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Class Arm */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-extrabold uppercase text-slate-400">Class Arm *</label>
+                      <select
+                        value={selectedClassId}
+                        onChange={(e) => setSelectedClassId(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-fg-custom focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                      >
+                        {classes.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Academic Session */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-extrabold uppercase text-slate-400">Academic Session *</label>
+                      <select
+                        value={selectedSessionId}
+                        onChange={(e) => setSelectedSessionId(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-fg-custom focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                      >
+                        {sessions.map(s => (
+                          <option key={s.id} value={s.id}>{s.name} {s.active ? '(Active)' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Academic Term */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-extrabold uppercase text-slate-400">Academic Term *</label>
+                      <select
+                        value={selectedTermId}
+                        onChange={(e) => setSelectedTermId(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-fg-custom focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                      >
+                        {terms.map(t => (
+                          <option key={t.id} value={t.id}>{t.name} {t.active ? '(Active)' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Reload Button */}
+                    <div className="space-y-1.5 flex flex-col justify-end">
+                      <button
+                        onClick={() => fetchClassAttendance()}
+                        disabled={attendanceLoading}
+                        className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl border border-border-custom hover:bg-muted-custom text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${attendanceLoading ? 'animate-spin' : ''}`} />
+                        <span>Reload Register</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Batch Tools */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border-custom">
+                    <div className="flex items-center space-x-2 w-full sm:w-auto">
+                      <span className="text-[11px] font-bold text-slate-400 whitespace-nowrap">Default Total Days:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={defaultTotalDays}
+                        onChange={(e) => setDefaultTotalDays(e.target.value)}
+                        className="w-20 px-3 py-1.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-center"
+                      />
+                      <button
+                        onClick={applyDefaultTotalDaysToAll}
+                        type="button"
+                        className="px-3 py-1.5 rounded-xl border border-secondary/40 text-secondary hover:bg-secondary hover:text-white text-[11px] font-extrabold transition-all cursor-pointer whitespace-nowrap shadow-2xs"
+                      >
+                        Apply to All
+                      </button>
+                    </div>
+
+                    <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                      <button
+                        onClick={markAllPresent}
+                        type="button"
+                        className="flex items-center space-x-1.5 px-4 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-xs font-extrabold transition-all cursor-pointer"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Mark All 100% Present</span>
+                      </button>
+
+                      <button
+                        onClick={handleSaveAttendance}
+                        disabled={attendanceSaving || students.length === 0}
+                        className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                      >
+                        {attendanceSaving ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3.5 h-3.5" />
+                            <span>Save All Attendance</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Attendance Table */}
+                <div className="bg-card-custom border border-border-custom rounded-3xl overflow-hidden shadow-xs">
+                  <div className="p-4 border-b border-border-custom flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-black uppercase text-primary dark:text-white">
+                        Class Register: {selectedClassRecord?.name} ({selectedSessionRecord?.name} - {selectedTermRecord?.name})
+                      </h4>
+                      <p className="text-[10px] text-muted-fg-custom font-medium mt-0.5">
+                        Each student has an individual input for days present to reflect their specific attendance rate.
+                      </p>
+                    </div>
+                    <span className="text-xs font-extrabold text-muted-fg-custom">
+                      {students.length} Students Listed
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-muted-custom/40 text-muted-fg-custom font-bold border-b border-border-custom">
+                          <th className="p-4 w-12 text-center">#</th>
+                          <th className="p-4">Student ID & Admission</th>
+                          <th className="p-4">Student Name</th>
+                          <th className="p-4 text-center">Days Present</th>
+                          <th className="p-4 text-center">Total School Days</th>
+                          <th className="p-4 text-center">Attendance %</th>
+                          <th className="p-4">Remark / Note</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border-custom">
+                        {students.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="p-8 text-center text-slate-400 font-bold">
+                              No students found in this class arm.
+                            </td>
+                          </tr>
+                        ) : (
+                          students.map((student, idx) => {
+                            const rec = attendanceRecords[student.id] || { daysPresent: '', totalDays: defaultTotalDays || '60', remark: '' };
+                            const parsedDays = parseInt(rec.daysPresent, 10) || 0;
+                            const parsedTotal = parseInt(rec.totalDays, 10) || parseInt(defaultTotalDays, 10) || 60;
+                            const pct = parsedTotal > 0 ? Math.min(100, Math.round(((parsedDays / parsedTotal) * 100) * 10) / 10) : 0;
+                            const hasEntered = rec.daysPresent !== '';
+
+                            let badgeStyle = 'bg-muted-custom text-slate-400';
+                            if (hasEntered) {
+                              if (pct >= 75) badgeStyle = 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30';
+                              else if (pct >= 50) badgeStyle = 'bg-amber-500/15 text-amber-600 border border-amber-500/30';
+                              else badgeStyle = 'bg-danger/15 text-danger border border-danger/30';
+                            }
+
+                            return (
+                              <tr key={student.id} className="hover:bg-muted-custom/10 transition-colors">
+                                <td className="p-4 text-center text-slate-400 font-bold">{idx + 1}</td>
+                                <td className="p-4">
+                                  <span className="block font-bold text-primary dark:text-white">{student.id}</span>
+                                  <span className="block text-[10px] text-muted-fg-custom font-medium">{student.admissionNumber}</span>
+                                </td>
+                                <td className="p-4">
+                                  <span className="block font-extrabold uppercase text-primary dark:text-white">{student.fullName}</span>
+                                  <span className="block text-[10px] text-slate-400">{student.gender}</span>
+                                </td>
+                                <td className="p-4 text-center">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={parsedTotal}
+                                    value={rec.daysPresent}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setAttendanceRecords(prev => ({
+                                        ...prev,
+                                        [student.id]: {
+                                          ...(prev[student.id] || { totalDays: defaultTotalDays || '60', remark: '' }),
+                                          daysPresent: val,
+                                        }
+                                      }));
+                                    }}
+                                    className="w-24 px-3 py-1.5 rounded-xl bg-bg-custom border border-border-custom text-center font-bold text-xs focus:outline-hidden focus:ring-2 focus:ring-secondary/30"
+                                    placeholder="Days"
+                                  />
+                                </td>
+                                <td className="p-4 text-center">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={365}
+                                    value={rec.totalDays}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setAttendanceRecords(prev => ({
+                                        ...prev,
+                                        [student.id]: {
+                                          ...(prev[student.id] || { daysPresent: '', remark: '' }),
+                                          totalDays: val,
+                                        }
+                                      }));
+                                    }}
+                                    className="w-24 px-3 py-1.5 rounded-xl bg-bg-custom border border-border-custom text-center font-bold text-xs focus:outline-hidden focus:ring-2 focus:ring-secondary/30"
+                                    placeholder="Total"
+                                  />
+                                </td>
+                                <td className="p-4 text-center">
+                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black ${badgeStyle}`}>
+                                    {hasEntered ? `${pct}%` : 'Pending'}
+                                  </span>
+                                </td>
+                                <td className="p-4">
+                                  <input
+                                    type="text"
+                                    value={rec.remark}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setAttendanceRecords(prev => ({
+                                        ...prev,
+                                        [student.id]: {
+                                          ...(prev[student.id] || { daysPresent: '', totalDays: defaultTotalDays || '60' }),
+                                          remark: val,
+                                        }
+                                      }));
+                                    }}
+                                    className="w-full max-w-xs px-3 py-1.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-secondary/30"
+                                    placeholder="e.g. Regular, Sick leave..."
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Table Footer Actions */}
+                  <div className="p-4 border-t border-border-custom bg-muted-custom/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-xs text-muted-fg-custom">
+                      Ready to save attendance for <strong>{students.length}</strong> students. Values are saved to the database and will reflect automatically on PDF and Online Report Cards.
+                    </div>
+                    <button
+                      onClick={handleSaveAttendance}
+                      disabled={attendanceSaving || students.length === 0}
+                      className="flex items-center space-x-2 px-6 py-2.5 rounded-2xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer w-full sm:w-auto justify-center"
+                    >
+                      {attendanceSaving ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Saving Records...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Save All Attendance Records</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* MANUAL SCORE SHEET TAB */}
           {activeTab === 'manual' && (

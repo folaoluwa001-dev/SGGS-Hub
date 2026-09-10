@@ -95,6 +95,12 @@ export default function AdminDashboard() {
   const [sessionActionLoading, setSessionActionLoading] = useState(false);
   const [sessionActionMsg, setSessionActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Class Setup states
+  const [newClassName, setNewClassName] = useState('');
+  const [newClassLevel, setNewClassLevel] = useState<'JUNIOR' | 'SENIOR'>('JUNIOR');
+  const [classActionLoading, setClassActionLoading] = useState(false);
+  const [classActionMsg, setClassActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Term Resumption states
   const [resumptionDates, setResumptionDates] = useState<Record<string, string>>({});
   const [resumptionSaving, setResumptionSaving] = useState(false);
@@ -276,6 +282,29 @@ export default function AdminDashboard() {
       setSessionActionMsg({ type: 'error', text: err.message });
     } finally {
       setSessionActionLoading(false);
+    }
+  };
+
+  const handleCreateClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClassName.trim()) return;
+    setClassActionLoading(true);
+    setClassActionMsg(null);
+    try {
+      const res = await fetch('/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newClassName.trim().toUpperCase(), level: newClassLevel }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create class');
+      setClassActionMsg({ type: 'success', text: `Class '${data.name}' was created successfully!` });
+      setNewClassName('');
+      await fetchClasses();
+    } catch (err: any) {
+      setClassActionMsg({ type: 'error', text: err.message || 'Failed to create class' });
+    } finally {
+      setClassActionLoading(false);
     }
   };
 
@@ -1468,13 +1497,13 @@ export default function AdminDashboard() {
                     >
                       <option value="">All Classes & Groups</option>
                       <optgroup label="Standard Classes">
-                        {classes.filter(c => c.level !== 'GRADUATED' && !c.name.startsWith('Graduating Class')).map(c => (
+                        {classes.filter(c => c.level !== 'GRADUATED' && !c.name.startsWith('Graduating')).map(c => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                       </optgroup>
-                      {classes.some(c => c.level === 'GRADUATED' || c.name.startsWith('Graduating Class')) && (
+                      {classes.some(c => c.level === 'GRADUATED' || c.name.startsWith('Graduating')) && (
                         <optgroup label="Graduated Classes">
-                          {classes.filter(c => c.level === 'GRADUATED' || c.name.startsWith('Graduating Class')).map(c => (
+                          {classes.filter(c => c.level === 'GRADUATED' || c.name.startsWith('Graduating')).map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </optgroup>
@@ -2152,6 +2181,22 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+                {classActionMsg && (
+                  <div className={`p-4 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs ${
+                    classActionMsg.type === 'success'
+                      ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/25'
+                      : 'bg-danger/10 text-danger border border-danger/25'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      {classActionMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                      <span>{classActionMsg.text}</span>
+                    </div>
+                    <button onClick={() => setClassActionMsg(null)} className="p-1 hover:opacity-75">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
                 {resumptionMsg && (
                   <div className={`p-4 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs ${
                     resumptionMsg.type === 'success'
@@ -2177,7 +2222,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <h4 className="text-sm font-black text-emerald-600 dark:text-emerald-400 uppercase">
-                            Academic Migration Executed Successfully!
+                            Academic Migration & Rollover Executed Successfully!
                           </h4>
                           <p className="text-xs text-muted-fg-custom font-medium">
                             Directory migrated from <strong>{migrateResult.sourceSession?.name}</strong> to <strong>{migrateResult.targetSession?.name}</strong>.
@@ -2241,232 +2286,330 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* 2-Column Grid: Sessions Management & Term Resumption */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  
-                  {/* Left: Academic Sessions Card (7 Cols) */}
-                  <div className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6">
-                    <div className="flex items-center justify-between border-b border-border-custom pb-4">
-                      <div>
-                        <h4 className="text-sm font-black uppercase text-primary dark:text-white flex items-center space-x-2">
-                          <Calendar className="w-4 h-4 text-secondary" />
-                          <span>Academic Sessions Directory</span>
-                        </h4>
-                        <p className="text-[11px] text-muted-fg-custom font-medium mt-0.5">
-                          Create session years and activate the current school academic year.
-                        </p>
-                      </div>
-                      <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-muted-custom text-fg-custom border border-border-custom">
-                        {sessions.length} Sessions Registered
-                      </span>
-                    </div>
-
-                    {/* Create New Session Form */}
-                    <form onSubmit={handleCreateSession} className="p-4 rounded-2xl bg-muted-custom/30 border border-border-custom space-y-4">
-                      <span className="block text-xs font-black uppercase text-primary dark:text-white">
-                        Create New Academic Session
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                        <div className="sm:col-span-7">
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. 2026/2027 or 2027/2028"
-                            value={newSessionName}
-                            onChange={(e) => setNewSessionName(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:ring-2 focus:ring-primary/30"
-                          />
-                        </div>
-                        <div className="sm:col-span-5 flex items-center space-x-2">
-                          <button
-                            type="submit"
-                            disabled={sessionActionLoading || !newSessionName.trim()}
-                            className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
-                          >
-                            {sessionActionLoading ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                            <span>Add Session</span>
-                          </button>
-                        </div>
-                      </div>
-                      <label className="flex items-center space-x-2 cursor-pointer pt-1">
-                        <input
-                          type="checkbox"
-                          checked={newSessionActive}
-                          onChange={(e) => setNewSessionActive(e.target.checked)}
-                          className="w-4 h-4 rounded text-secondary focus:ring-secondary/30 accent-secondary"
-                        />
-                        <span className="text-[11px] font-bold text-muted-fg-custom">
-                          Immediately set this new session as the current active session
-                        </span>
-                      </label>
-                    </form>
-
-                    {/* Sessions List */}
-                    <div className="rounded-2xl border border-border-custom overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-muted-custom/40 border-b border-border-custom font-bold text-muted-fg-custom">
-                          <tr>
-                            <th className="p-3.5">Session Name</th>
-                            <th className="p-3.5">Status</th>
-                            <th className="p-3.5">Enrolled</th>
-                            <th className="p-3.5 text-right">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border-custom">
-                          {sessions.map((sess: any) => {
-                            const count = students.filter((s: any) => s.sessionId === sess.id).length;
-                            return (
-                              <tr key={sess.id} className="hover:bg-muted-custom/10 transition-colors">
-                                <td className="p-3.5 font-extrabold text-primary dark:text-white">
-                                  {sess.name}
-                                </td>
-                                <td className="p-3.5">
-                                  {sess.active ? (
-                                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/15 text-emerald-600 border border-emerald-500/30">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                      <span>ACTIVE</span>
-                                    </span>
-                                  ) : (
-                                    <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold bg-muted-custom text-muted-fg-custom">
-                                      Inactive
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-3.5 font-semibold text-slate-400">
-                                  {count} students
-                                </td>
-                                <td className="p-3.5 text-right">
-                                  {sess.active ? (
-                                    <span className="text-[11px] font-bold text-emerald-600 flex items-center justify-end space-x-1">
-                                      <Check className="w-3.5 h-3.5" />
-                                      <span>Current Active</span>
-                                    </span>
-                                  ) : (
-                                    <button
-                                      onClick={() => handleActivateSession(sess.id)}
-                                      disabled={sessionActionLoading}
-                                      className="px-3 py-1.5 rounded-xl border border-secondary/40 text-secondary hover:bg-secondary hover:text-white font-extrabold text-[11px] transition-all cursor-pointer shadow-2xs"
-                                    >
-                                      Activate Session
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                {/* Section (a): Academic Session & Class Setup */}
+                <div className="space-y-6">
+                  <div className="border-b border-border-custom pb-3">
+                    <h4 className="text-sm font-black uppercase text-primary dark:text-white flex items-center space-x-2">
+                      <Sliders className="w-4 h-4 text-secondary" />
+                      <span>Academic Session & Class Setup</span>
+                    </h4>
+                    <p className="text-xs text-muted-fg-custom font-medium mt-0.5">
+                      Create and activate academic year sessions globally across the app, and configure class arms.
+                    </p>
                   </div>
 
-                  {/* Right: Term Resumption Settings Card (5 Cols) */}
-                  <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6 flex flex-col justify-between">
-                    <div className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Academic Sessions Setup Card (7 Cols) */}
+                    <div className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6">
                       <div className="flex items-center justify-between border-b border-border-custom pb-4">
                         <div>
                           <h4 className="text-sm font-black uppercase text-primary dark:text-white flex items-center space-x-2">
-                            <Clock className="w-4 h-4 text-secondary" />
-                            <span>Term Resumption Settings</span>
+                            <Calendar className="w-4 h-4 text-secondary" />
+                            <span>Academic Sessions</span>
                           </h4>
                           <p className="text-[11px] text-muted-fg-custom font-medium mt-0.5">
-                            Set resumption dates and activate current academic term.
+                            Active session sets what session is active for all users across the app.
                           </p>
                         </div>
+                        <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-muted-custom text-fg-custom border border-border-custom">
+                          {sessions.length} Registered
+                        </span>
                       </div>
 
-                      {/* Term Items */}
-                      <div className="space-y-4">
-                        {terms.map((term: any) => {
-                          const dateVal = resumptionDates[term.id] || '';
-                          return (
-                            <div
-                              key={term.id}
-                              className={`p-4 rounded-2xl border transition-all ${
-                                term.active
-                                  ? 'bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20 shadow-xs'
-                                  : 'bg-card-custom border-border-custom'
-                              }`}
+                      {/* Create New Session Form */}
+                      <form onSubmit={handleCreateSession} className="p-4 rounded-2xl bg-muted-custom/30 border border-border-custom space-y-4">
+                        <span className="block text-xs font-black uppercase text-primary dark:text-white">
+                          Create New Academic Year Session
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                          <div className="sm:col-span-7">
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. 2026/2027 or 2027/2028"
+                              value={newSessionName}
+                              onChange={(e) => setNewSessionName(e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+                            />
+                          </div>
+                          <div className="sm:col-span-5 flex items-center space-x-2">
+                            <button
+                              type="submit"
+                              disabled={sessionActionLoading || !newSessionName.trim()}
+                              className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-light disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
                             >
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center space-x-2">
-                                  <span className="font-black text-xs text-primary dark:text-white">{term.name}</span>
-                                  {term.active && (
-                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-secondary text-white">
-                                      ACTIVE
-                                    </span>
-                                  )}
-                                </div>
-                                {!term.active && (
-                                  <button
-                                    onClick={() => handleActivateTerm(term.id)}
-                                    disabled={resumptionSaving}
-                                    className="text-[10px] font-extrabold text-secondary hover:underline cursor-pointer"
-                                  >
-                                    Set as Active Term
-                                  </button>
-                                )}
-                              </div>
+                              {sessionActionLoading ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                              <span>Add Session</span>
+                            </button>
+                          </div>
+                        </div>
+                        <label className="flex items-center space-x-2 cursor-pointer pt-1">
+                          <input
+                            type="checkbox"
+                            checked={newSessionActive}
+                            onChange={(e) => setNewSessionActive(e.target.checked)}
+                            className="w-4 h-4 rounded text-secondary focus:ring-secondary/30 accent-secondary"
+                          />
+                          <span className="text-[11px] font-bold text-muted-fg-custom">
+                            Immediately set this session as active for all users across the app
+                          </span>
+                        </label>
+                      </form>
 
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-extrabold uppercase text-slate-400">
-                                  Resumption Date
-                                </label>
-                                <input
-                                  type="date"
-                                  value={dateVal}
-                                  onChange={(e) =>
-                                    setResumptionDates({
-                                      ...resumptionDates,
-                                      [term.id]: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-fg-custom focus:outline-hidden focus:ring-2 focus:ring-secondary/30"
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
+                      {/* Sessions List */}
+                      <div className="rounded-2xl border border-border-custom overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-muted-custom/40 border-b border-border-custom font-bold text-muted-fg-custom">
+                            <tr>
+                              <th className="p-3.5">Session Name</th>
+                              <th className="p-3.5">Global Status</th>
+                              <th className="p-3.5">Enrolled</th>
+                              <th className="p-3.5 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border-custom">
+                            {sessions.map((sess: any) => {
+                              const count = students.filter((s: any) => s.sessionId === sess.id).length;
+                              return (
+                                <tr key={sess.id} className="hover:bg-muted-custom/10 transition-colors">
+                                  <td className="p-3.5 font-extrabold text-primary dark:text-white">
+                                    {sess.name}
+                                  </td>
+                                  <td className="p-3.5">
+                                    {sess.active ? (
+                                      <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/15 text-emerald-600 border border-emerald-500/30">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span>ACTIVE (ALL USERS)</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold bg-muted-custom text-muted-fg-custom">
+                                        Inactive
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5 font-semibold text-slate-400">
+                                    {count} students
+                                  </td>
+                                  <td className="p-3.5 text-right">
+                                    {sess.active ? (
+                                      <span className="text-[11px] font-bold text-emerald-600 flex items-center justify-end space-x-1">
+                                        <Check className="w-3.5 h-3.5" />
+                                        <span>Current Active</span>
+                                      </span>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleActivateSession(sess.id)}
+                                        disabled={sessionActionLoading}
+                                        className="px-3 py-1.5 rounded-xl border border-secondary/40 text-secondary hover:bg-secondary hover:text-white font-extrabold text-[11px] transition-all cursor-pointer shadow-2xs"
+                                      >
+                                        Set Active Across App
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
-                    {/* Save Resumption Button */}
-                    <div className="pt-4 border-t border-border-custom">
-                      <button
-                        onClick={handleSaveResumptionDates}
-                        disabled={resumptionSaving}
-                        className="w-full flex items-center justify-center space-x-2 px-5 py-3 rounded-2xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
-                      >
-                        {resumptionSaving ? (
-                          <RefreshCcw className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Save className="w-4 h-4" />
-                        )}
-                        <span>Save Term Resumption Dates</span>
-                      </button>
+                    {/* Class Setup Card (5 Cols) */}
+                    <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6 flex flex-col justify-between">
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between border-b border-border-custom pb-4">
+                          <div>
+                            <h4 className="text-sm font-black uppercase text-primary dark:text-white flex items-center space-x-2">
+                              <BookOpen className="w-4 h-4 text-secondary" />
+                              <span>Class Category Setup</span>
+                            </h4>
+                            <p className="text-[11px] text-muted-fg-custom font-medium mt-0.5">
+                              Standard classes and graduated cohort categories.
+                            </p>
+                          </div>
+                          <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-muted-custom text-fg-custom border border-border-custom">
+                            {classes.length} Classes
+                          </span>
+                        </div>
+
+                        {/* Add Class Form */}
+                        <form onSubmit={handleCreateClass} className="p-4 rounded-2xl bg-muted-custom/30 border border-border-custom space-y-3">
+                          <span className="block text-xs font-black uppercase text-primary dark:text-white">
+                            Add New Class Arm
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                            <div className="sm:col-span-7">
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g. JSS1 A or SSS1 SCIENCE"
+                                value={newClassName}
+                                onChange={(e) => setNewClassName(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold uppercase focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+                              />
+                            </div>
+                            <div className="sm:col-span-5">
+                              <select
+                                value={newClassLevel}
+                                onChange={(e: any) => setNewClassLevel(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+                              >
+                                <option value="JUNIOR">JUNIOR</option>
+                                <option value="SENIOR">SENIOR</option>
+                              </select>
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={classActionLoading || !newClassName.trim()}
+                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary-light disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                          >
+                            {classActionLoading ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                            <span>Create Class</span>
+                          </button>
+                        </form>
+
+                        {/* Classes List */}
+                        <div className="rounded-2xl border border-border-custom overflow-hidden max-h-64 overflow-y-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-muted-custom/40 border-b border-border-custom font-bold text-muted-fg-custom sticky top-0">
+                              <tr>
+                                <th className="p-3">Class Name</th>
+                                <th className="p-3">Level</th>
+                                <th className="p-3 text-right">Students</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border-custom font-semibold">
+                              {classes.map((cls: any) => {
+                                const count = students.filter((s: any) => s.classId === cls.id).length;
+                                const isGraduated = cls.level === 'GRADUATED' || cls.name.startsWith('Graduating');
+                                return (
+                                  <tr key={cls.id} className="hover:bg-muted-custom/10">
+                                    <td className="p-3 font-bold text-primary dark:text-white flex items-center space-x-1.5">
+                                      {isGraduated && <GraduationCap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />}
+                                      <span>{cls.name}</span>
+                                    </td>
+                                    <td className="p-3">
+                                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                        isGraduated 
+                                          ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400' 
+                                          : cls.level === 'SENIOR' 
+                                            ? 'bg-amber-500/15 text-amber-600' 
+                                            : 'bg-blue-500/15 text-blue-600'
+                                      }`}>
+                                        {cls.level}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 text-right text-slate-400 font-bold">{count}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Term Resumption Settings Card */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6">
+                  <div className="flex items-center justify-between border-b border-border-custom pb-4">
+                    <div>
+                      <h4 className="text-sm font-black uppercase text-primary dark:text-white flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-secondary" />
+                        <span>Term Resumption Settings</span>
+                      </h4>
+                      <p className="text-[11px] text-muted-fg-custom font-medium mt-0.5">
+                        Set resumption dates and activate current academic term across the portal.
+                      </p>
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {terms.map((term: any) => {
+                      const dateVal = resumptionDates[term.id] || '';
+                      return (
+                        <div
+                          key={term.id}
+                          className={`p-4 rounded-2xl border transition-all ${
+                            term.active
+                              ? 'bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20 shadow-xs'
+                              : 'bg-card-custom border-border-custom'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-black text-xs text-primary dark:text-white">{term.name}</span>
+                              {term.active && (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-secondary text-white">
+                                  ACTIVE
+                                </span>
+                              )}
+                            </div>
+                            {!term.active && (
+                              <button
+                                onClick={() => handleActivateTerm(term.id)}
+                                disabled={resumptionSaving}
+                                className="text-[10px] font-extrabold text-secondary hover:underline cursor-pointer"
+                              >
+                                Set as Active
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-extrabold uppercase text-slate-400">
+                              Resumption Date
+                            </label>
+                            <input
+                              type="date"
+                              value={dateVal}
+                              onChange={(e) =>
+                                setResumptionDates({
+                                  ...resumptionDates,
+                                  [term.id]: e.target.value,
+                                })
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-bg-custom border border-border-custom text-xs font-bold text-fg-custom focus:outline-hidden focus:ring-2 focus:ring-secondary/30"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-end pt-2 border-t border-border-custom">
+                    <button
+                      onClick={handleSaveResumptionDates}
+                      disabled={resumptionSaving}
+                      className="flex items-center justify-center space-x-2 px-6 py-2.5 rounded-xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                    >
+                      {resumptionSaving ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      <span>Save Term Resumption Dates</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Card 3: Student Directory Migration Station */}
+                {/* Section (b): Session Rollover & Class Promotion */}
                 <div className="p-6 sm:p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xs space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-custom pb-4">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
                         <GraduationCap className="w-5 h-5 text-secondary" />
                         <h4 className="text-base font-black uppercase text-primary dark:text-white tracking-wide">
-                          Student Directory Migration & Promotion
+                          Session Rollover & Class Promotion
                         </h4>
                       </div>
                       <p className="text-xs text-muted-fg-custom font-medium max-w-3xl">
-                        Promote students from their current class to the next class cohort for a new academic session. Final-year classes (SSS3) will automatically graduate into their dedicated alumni category: <strong>Graduating Class of [Session]</strong>.
+                        Automatically rollover students directory to the next class (e.g. JSS1 ➜ JSS2) without manually recreating each class to match the current session. All SSS3 students are rolled over to a new list called Graduated, named e.g. <strong>Graduating Students of {sourceSessObj?.name || 'Year'}</strong> to ensure easy categorisation and avoid deleting old sets.
                       </p>
                     </div>
                   </div>
 
                   {/* Progression Path Infographic */}
                   <div className="p-4 rounded-2xl bg-muted-custom/40 border border-border-custom overflow-x-auto">
-                    <span className="block text-[10px] font-extrabold uppercase text-slate-400 mb-2">Cohort Progression Pipeline</span>
+                    <span className="block text-[10px] font-extrabold uppercase text-slate-400 mb-2">Automated Rollover Progression Pipeline</span>
                     <div className="flex items-center space-x-2 min-w-[700px] text-xs font-bold">
                       <span className="px-3 py-1.5 rounded-xl bg-card-custom border border-border-custom text-primary dark:text-white">JSS1</span>
                       <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -2482,7 +2625,7 @@ export default function AdminDashboard() {
                       <ArrowRight className="w-4 h-4 text-purple-500" />
                       <span className="px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center space-x-1.5">
                         <GraduationCap className="w-3.5 h-3.5" />
-                        <span>Graduating Class of {sourceSessObj?.name || 'Year'}</span>
+                        <span>Graduating Students of {sourceSessObj?.name || 'Year'}</span>
                       </span>
                     </div>
                   </div>
@@ -2491,7 +2634,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-400 uppercase">
-                        Source Academic Session (Current) *
+                        Source Academic Session (Current Directory) *
                       </label>
                       <select
                         value={migrateSourceSessionId}
@@ -2505,7 +2648,7 @@ export default function AdminDashboard() {
                         ))}
                       </select>
                       <span className="text-[10px] text-muted-fg-custom font-medium block">
-                        Students in this session will be advanced to their next class cohort.
+                        Students in this session will be promoted forward to the next class level.
                       </span>
                     </div>
 
@@ -2528,7 +2671,7 @@ export default function AdminDashboard() {
                           ))}
                       </select>
                       <span className="text-[10px] text-muted-fg-custom font-medium block">
-                        Promoted students will reflect in this destination academic session.
+                        Promoted classes will be registered under this destination academic year.
                       </span>
                     </div>
                   </div>
@@ -2567,7 +2710,7 @@ export default function AdminDashboard() {
                       <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center">
                         <span className="block text-[10px] font-extrabold text-purple-600 dark:text-purple-400">SSS3 ➜ Graduating</span>
                         <span className="text-lg font-black text-purple-600 dark:text-purple-400">{sss3Count}</span>
-                        <span className="text-[9px] text-purple-500/80 block">graduating</span>
+                        <span className="text-[9px] text-purple-500/80 block">to Graduated List</span>
                       </div>
                     </div>
                   </div>
@@ -2582,7 +2725,7 @@ export default function AdminDashboard() {
                       className="w-4 h-4 rounded text-secondary focus:ring-secondary/30 accent-secondary cursor-pointer"
                     />
                     <label htmlFor="activateTarget" className="text-xs font-bold text-fg-custom cursor-pointer">
-                      Automatically activate the target session (<strong>{targetSessObj?.name || 'Selected'}</strong>) as the current system active session upon migration
+                      Automatically activate the target session (<strong>{targetSessObj?.name || 'Selected'}</strong>) as the current system active session upon rollover
                     </label>
                   </div>
 
@@ -2604,7 +2747,7 @@ export default function AdminDashboard() {
                       className="flex items-center justify-center space-x-2 px-6 py-3 rounded-2xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs shadow-md transition-all cursor-pointer w-full sm:w-auto"
                     >
                       <Sparkles className="w-4 h-4" />
-                      <span>Start Directory Migration</span>
+                      <span>Start Session Rollover & Promotion</span>
                     </button>
                   </div>
 
@@ -2992,7 +3135,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="text-base font-black text-primary dark:text-white uppercase">
-                    Confirm Student Directory Migration
+                    Confirm Session Rollover & Promotion
                   </h3>
                   <p className="text-xs text-muted-fg-custom font-medium">
                     Advance class cohorts and transition graduating classes.
@@ -3002,13 +3145,13 @@ export default function AdminDashboard() {
 
               <div className="p-4 rounded-2xl bg-muted-custom/40 border border-border-custom space-y-3 text-xs">
                 <p className="font-bold text-fg-custom">
-                  You are about to advance students from session <strong>{sourceSess?.name}</strong> to <strong>{targetSess?.name}</strong>:
+                  You are about to rollover students from session <strong>{sourceSess?.name}</strong> to <strong>{targetSess?.name}</strong>:
                 </p>
                 <ul className="list-disc pl-5 space-y-1.5 text-muted-fg-custom font-medium">
-                  <li>Classes <strong>JSS1 through SSS2</strong> will be promoted to the subsequent class level in <strong>{targetSess?.name}</strong>.</li>
-                  <li>All <strong>{sss3Count} students</strong> currently in SSS3 will graduate into the dedicated alumni category <strong className="text-purple-600 dark:text-purple-400">"Graduating Class of {sourceSess?.name}"</strong>.</li>
+                  <li>Classes <strong>JSS1 through SSS2</strong> will be promoted to the subsequent class level in <strong>{targetSess?.name}</strong> without recreating classes.</li>
+                  <li>All <strong>{sss3Count} students</strong> currently in SSS3 will graduate into the dedicated alumni category <strong className="text-purple-600 dark:text-purple-400">"Graduating Students of {sourceSess?.name}"</strong>.</li>
                   {migrateActivateTarget && (
-                    <li>Target session <strong>{targetSess?.name}</strong> will be set as the new active academic session.</li>
+                    <li>Target session <strong>{targetSess?.name}</strong> will be set as the new active academic session across the app.</li>
                   )}
                 </ul>
               </div>

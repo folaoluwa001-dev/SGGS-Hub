@@ -169,6 +169,17 @@ export async function POST(request: Request) {
       },
     });
 
+    // Fetch attendance record for the student for this term & session
+    const attendanceRecord = targetTermId && targetSessionId ? await db.attendance.findUnique({
+      where: {
+        studentId_termId_sessionId: {
+          studentId: student.id,
+          termId: targetTermId,
+          sessionId: targetSessionId,
+        },
+      },
+    }) : null;
+
     return NextResponse.json({
       success: true,
       student: {
@@ -181,6 +192,12 @@ export async function POST(request: Request) {
       },
       term: activeTermRecord,
       session: activeSessionRecord,
+      attendance: attendanceRecord ? {
+        daysPresent: attendanceRecord.daysPresent,
+        totalDays: attendanceRecord.totalDays,
+        percentage: attendanceRecord.percentage,
+        remark: attendanceRecord.remark,
+      } : null,
       results: results.map((r) => ({
         subject: r.subject.name,
         caScore: r.caScore,

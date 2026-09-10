@@ -44,6 +44,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No students registered in this class' }, { status: 400 });
     }
 
+    // Pre-fetch attendance records for all class students in this term & session
+    const attendanceRecords = await db.attendance.findMany({
+      where: {
+        classId: classRecord.id,
+        termId: termRecord.id,
+        sessionId: sessionRecord.id,
+      },
+    });
+    const attendanceMap = new Map<string, number>();
+    attendanceRecords.forEach((a) => attendanceMap.set(a.studentId, a.percentage));
+
     // 4. Create ZIP and populate with student report cards
     const zip = new JSZip();
 
@@ -84,8 +95,11 @@ export async function GET(request: Request) {
         remark: r.remark
       }));
 
-      // Generate PDF buffer
-      const pdfBuffer = await generateReportCardPDF(formattedStudent, formattedResults, "96%");
+      // Generate PDF buffer using recorded attendance or fallback
+      const studentAttendanceStr = attendanceMap.has(student.id)
+        ? `${attendanceMap.get(student.id)}%`
+        : "95%";
+      const pdfBuffer = await generateReportCardPDF(formattedStudent, formattedResults, studentAttendanceStr);
       
       // Clean student name for filename
       const cleanedStudentName = student.fullName.trim().replace(/\s+/g, '_');

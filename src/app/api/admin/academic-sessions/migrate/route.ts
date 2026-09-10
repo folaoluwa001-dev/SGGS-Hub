@@ -57,9 +57,9 @@ export async function POST(request: Request) {
       classMap[stdCls.name] = cls;
     }
 
-    // 3. Ensure the Graduating Class category exists for source session
-    // e.g. "Graduating Class of 2026/2027"
-    const graduatingClassName = `Graduating Class of ${sourceSession.name}`;
+    // 3. Ensure the Graduating Students category exists for source session
+    // e.g. "Graduating Students of 2026/2027"
+    const graduatingClassName = `Graduating Students of ${sourceSession.name}`;
     let graduatingClass = await db.class.findUnique({
       where: { name: graduatingClassName },
     });
