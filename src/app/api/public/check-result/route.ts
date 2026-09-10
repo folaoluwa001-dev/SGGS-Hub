@@ -3,17 +3,26 @@ import { db } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { studentId, tokenString, visitorName, termId, sessionId } = await request.json();
+    const { studentId: rawStudentId, tokenString: rawTokenString, visitorName: rawVisitorName, termId, sessionId } = await request.json();
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     const userAgent = request.headers.get('user-agent') || 'Unknown';
+
+    const studentId = typeof rawStudentId === 'string' ? rawStudentId.trim() : '';
+    const tokenString = typeof rawTokenString === 'string' ? rawTokenString.trim().toUpperCase() : '';
+    const visitorName = typeof rawVisitorName === 'string' ? rawVisitorName.trim() : '';
 
     if (!studentId || !tokenString || !visitorName) {
       return NextResponse.json({ error: 'Student ID, Token, and Visitor Name are required' }, { status: 400 });
     }
 
-    // 1. Verify Student ID
-    const student = await db.student.findUnique({
-      where: { id: studentId },
+    // 1. Verify Student ID (case-insensitive search by student ID or admission number)
+    const student = await db.student.findFirst({
+      where: {
+        OR: [
+          { id: { equals: studentId, mode: 'insensitive' } },
+          { admissionNumber: { equals: studentId, mode: 'insensitive' } },
+        ],
+      },
       include: {
         class: true,
         session: true,
@@ -24,17 +33,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid Student ID. Student record not found.' }, { status: 404 });
     }
 
-    // 2. Verify Token
-    const token = await db.token.findUnique({
-      where: { tokenString: tokenString },
+    // 2. Verify Token (case-insensitive)
+    const token = await db.token.findFirst({
+      where: {
+        tokenString: { equals: tokenString, mode: 'insensitive' },
+      },
     });
 
     if (!token) {
       return NextResponse.json({ error: 'Invalid Token code. Double check the spelling.' }, { status: 401 });
     }
 
-    // 3. Verify Token Ownership
-    if (token.studentId !== studentId) {
+    // 3. Verify Token Ownership (compare against resolved student.id)
+    if (token.studentId !== student.id) {
       return NextResponse.json({ error: 'This token is not registered for this student ID.' }, { status: 401 });
     }
 
@@ -63,22 +74,27 @@ export async function POST(request: Request) {
     let targetSessionId = sessionId;
     let targetTermId = termId;
 
-    if (!targetSessionId || !targetTermId) {
-      const activeSessionSetting = await db.settings.findUnique({ where: { key: 'current_session_id' } });
-      const activeTermSetting = await db.settings.findUnique({ where: { key: 'current_term_id' } });
-      
-      targetSessionId = targetSessionId || activeSessionSetting?.value || student.sessionId;
-      targetTermId = targetTermId || activeTermSetting?.value;
+    if (!targetSessionId) {
+      const activeSession = await db.session.findFirst({ where: { active: true } });
+      targetSessionId = activeSession?.id || student.sessionId;
     }
 
     if (!targetTermId) {
-      // Fallback to any term that has results
+      const activeTerm = await db.term.findFirst({ where: { active: true } });
+      targetTermId = activeTerm?.id;
+    }
+
+    // Fallback to any term that has results for this student if target has none
+    if (!targetTermId || !targetSessionId) {
       const firstResult = await db.result.findFirst({
-        where: { studentId },
-        select: { termId: true, sessionId: true }
+        where: { studentId: student.id },
+        select: { termId: true, sessionId: true },
+        orderBy: { createdAt: 'desc' }
       });
-      targetTermId = firstResult?.termId;
-      targetSessionId = targetSessionId || firstResult?.sessionId;
+      if (firstResult) {
+        if (!targetTermId) targetTermId = firstResult.termId;
+        if (!targetSessionId) targetSessionId = firstResult.sessionId;
+      }
     }
 
     // If still no term, find first term in DB
@@ -86,11 +102,15 @@ export async function POST(request: Request) {
       const firstTerm = await db.term.findFirst();
       targetTermId = firstTerm?.id;
     }
+    if (!targetSessionId) {
+      const firstSession = await db.session.findFirst();
+      targetSessionId = firstSession?.id || student.sessionId;
+    }
 
     // 6. Fetch results for the target session/term
     const results = await db.result.findMany({
       where: {
-        studentId,
+        studentId: student.id,
         termId: targetTermId,
         sessionId: targetSessionId,
       },
@@ -104,12 +124,12 @@ export async function POST(request: Request) {
       },
     });
 
-    const activeTermRecord = await db.term.findUnique({ where: { id: targetTermId } });
-    const activeSessionRecord = await db.session.findUnique({ where: { id: targetSessionId } });
+    const activeTermRecord = targetTermId ? await db.term.findUnique({ where: { id: targetTermId } }) : await db.term.findFirst();
+    const activeSessionRecord = targetSessionId ? await db.session.findUnique({ where: { id: targetSessionId } }) : await db.session.findFirst();
 
     // Fetch other terms/sessions for which this student has results (historical checks)
     const availableChecks = await db.result.findMany({
-      where: { studentId },
+      where: { studentId: student.id },
       select: {
         term: { select: { id: true, name: true } },
         session: { select: { id: true, name: true } }
@@ -143,7 +163,7 @@ export async function POST(request: Request) {
     await db.auditLog.create({
       data: {
         action: 'Token Usage',
-        details: `Public check for student ${student.fullName} (${studentId}) using token ${tokenString}. Visitor: ${visitorName}. Usage: ${newUsageCount}/3`,
+        details: `Public check for student ${student.fullName} (${student.id}) using token ${tokenString}. Visitor: ${visitorName}. Usage: ${newUsageCount}/3`,
         ipAddress: ip,
         userAgent,
       },
@@ -156,7 +176,7 @@ export async function POST(request: Request) {
         admissionNumber: student.admissionNumber,
         fullName: student.fullName,
         gender: student.gender,
-        class: student.class.name,
+        class: student.class?.name || 'N/A',
         parentName: student.parentName,
       },
       term: activeTermRecord,

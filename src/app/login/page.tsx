@@ -80,7 +80,7 @@ export default function Login() {
       <header className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <div 
-            className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center"
+            className="w-8 h-8 flex items-center justify-center flex-shrink-0"
             dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
           />
           <span className="font-bold text-xs tracking-wider">SGGS Portal</span>
@@ -91,7 +91,11 @@ export default function Login() {
       {/* Main Login Card */}
       <main className="flex items-center justify-center px-4 flex-grow py-12">
         <div className="w-full max-w-md p-8 rounded-3xl bg-card-custom border border-border-custom shadow-xl space-y-6">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
+            <div 
+              className="w-16 h-16 mx-auto flex items-center justify-center"
+              dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
+            />
             <h1 className="text-2xl font-black text-primary dark:text-white">Staff Portal Login</h1>
             <p className="text-xs text-muted-fg-custom">
               {twoFactorRequired 

@@ -30,7 +30,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             {/* Logo and Name */}
             <Link href="/" className="flex items-center space-x-3 group">
               <div 
-                className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-primary text-white shadow-md group-hover:scale-105 transition-transform"
+                className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0"
                 dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
               />
               <div>
@@ -134,7 +134,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div 
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10"
+                  className="w-10 h-10 flex items-center justify-center flex-shrink-0"
                   dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
                 />
                 <span className="font-extrabold text-base text-white tracking-wide">

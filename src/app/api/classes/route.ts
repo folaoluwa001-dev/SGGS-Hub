@@ -8,8 +8,22 @@ export async function GET() {
     // Authenticated users can list classes
     await requireAuth();
 
-    const classes = await db.class.findMany({
-      orderBy: { name: 'asc' },
+    const classes = await db.class.findMany();
+
+    const CLASS_ORDER: Record<string, number> = {
+      JSS1: 1,
+      JSS2: 2,
+      JSS3: 3,
+      SSS1: 4,
+      SSS2: 5,
+      SSS3: 6,
+    };
+
+    classes.sort((a, b) => {
+      const orderA = CLASS_ORDER[a.name] || (a.level === 'GRADUATED' ? 100 : 50);
+      const orderB = CLASS_ORDER[b.name] || (b.level === 'GRADUATED' ? 100 : 50);
+      if (orderA !== orderB) return orderA - orderB;
+      return a.name.localeCompare(b.name);
     });
 
     return NextResponse.json(classes);

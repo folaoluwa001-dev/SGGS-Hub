@@ -124,7 +124,7 @@ export default function About() {
             </div>
             <h3 className="font-extrabold text-lg text-primary dark:text-white mb-2">Campus Expansion</h3>
             <p className="text-xs text-muted-fg-custom leading-relaxed">
-              Expanded to a multi-wing compound building modern science laboratories, computing facilities, and enrolling over 500 students across junior/senior wings.
+              Expanded to a multi-wing compound building modern science laboratories, computing facilities, and enrolling 100+ students across junior/senior wings.
             </p>
           </div>
 

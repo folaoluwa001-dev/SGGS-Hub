@@ -83,10 +83,11 @@ model Session {
 }
 
 model Term {
-  id      String   @id @default(uuid())
-  name    String   @unique // First Term, Second Term, Third Term
-  active  Boolean  @default(false)
-  results Result[]
+  id             String    @id @default(uuid())
+  name           String    @unique // First Term, Second Term, Third Term
+  active         Boolean   @default(false)
+  resumptionDate DateTime?
+  results        Result[]
 }
 
 model Result {

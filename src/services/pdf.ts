@@ -1,4 +1,6 @@
 import PDFDocument from 'pdfkit';
+import path from 'path';
+import fs from 'fs';
 import { schoolConfig } from '../../config/school.config';
 
 interface StudentInfo {
@@ -52,13 +54,27 @@ export function generateReportCardPDF(student: StudentInfo, results: ResultItem[
       doc.rect(20, 20, 555, 802).stroke('#cbd5e1');
 
       // --- HEADER / BRANDING ---
-      // Draw a vector school crest (shield)
-      doc.save();
-      doc.fillColor(schoolConfig.schoolColors.primary);
-      doc.path('M 55 45 L 85 45 L 90 75 L 70 95 L 50 75 Z').fill();
-      doc.fillColor(schoolConfig.schoolColors.secondary);
-      doc.circle(70, 70, 10).fill();
-      doc.restore();
+      const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
+      if (fs.existsSync(logoPath)) {
+        try {
+          doc.image(logoPath, 45, 38, { width: 55, height: 55, fit: [55, 55] });
+        } catch {
+          // Fallback vector crest if image error
+          doc.save();
+          doc.fillColor(schoolConfig.schoolColors.primary);
+          doc.path('M 55 45 L 85 45 L 90 75 L 70 95 L 50 75 Z').fill();
+          doc.fillColor(schoolConfig.schoolColors.secondary);
+          doc.circle(70, 70, 10).fill();
+          doc.restore();
+        }
+      } else {
+        doc.save();
+        doc.fillColor(schoolConfig.schoolColors.primary);
+        doc.path('M 55 45 L 85 45 L 90 75 L 70 95 L 50 75 Z').fill();
+        doc.fillColor(schoolConfig.schoolColors.secondary);
+        doc.circle(70, 70, 10).fill();
+        doc.restore();
+      }
 
       // School Name and Motto
       doc.fillColor(schoolConfig.schoolColors.primary)
@@ -228,11 +244,23 @@ export function generatePaymentReceiptPDF(payment: PaymentInfo): Promise<Buffer>
       doc.rect(20, 20, 555, 380).stroke('#cbd5e1');
 
       // --- HEADER ---
-      // Shield logo
-      doc.save();
-      doc.fillColor(schoolConfig.schoolColors.primary);
-      doc.path('M 40 35 L 60 35 L 65 50 L 52 65 L 38 50 Z').fill();
-      doc.restore();
+      // School logo
+      const receiptLogoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
+      if (fs.existsSync(receiptLogoPath)) {
+        try {
+          doc.image(receiptLogoPath, 36, 30, { width: 38, height: 38, fit: [38, 38] });
+        } catch {
+          doc.save();
+          doc.fillColor(schoolConfig.schoolColors.primary);
+          doc.path('M 40 35 L 60 35 L 65 50 L 52 65 L 38 50 Z').fill();
+          doc.restore();
+        }
+      } else {
+        doc.save();
+        doc.fillColor(schoolConfig.schoolColors.primary);
+        doc.path('M 40 35 L 60 35 L 65 50 L 52 65 L 38 50 Z').fill();
+        doc.restore();
+      }
 
       // School Name
       doc.fillColor(schoolConfig.schoolColors.primary)

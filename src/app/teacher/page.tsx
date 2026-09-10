@@ -346,7 +346,7 @@ export default function TeacherDashboard() {
               <div className="flex items-center justify-between border-b border-border-custom pb-4">
                 <div className="flex items-center space-x-3">
                   <div
-                    className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0"
+                    className="w-9 h-9 flex items-center justify-center flex-shrink-0"
                     dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
                   />
                   <div>
@@ -444,7 +444,7 @@ export default function TeacherDashboard() {
           <div className={`flex items-center ${sidebarCollapsed ? 'flex-col space-y-3' : 'justify-between'}`}>
             <div className="flex items-center space-x-3 overflow-hidden">
               <div
-                className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-xs"
+                className="w-9 h-9 flex items-center justify-center flex-shrink-0"
                 dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
               />
               {!sidebarCollapsed && (

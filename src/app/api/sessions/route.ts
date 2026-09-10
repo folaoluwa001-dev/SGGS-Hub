@@ -22,16 +22,18 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const sessionUser = await requireAuth(['SUPER_ADMIN']);
-    const { name, active } = await request.json();
+    const { id, name, active } = await request.json();
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     const userAgent = request.headers.get('user-agent') || 'Unknown';
 
-    if (!name) {
-      return NextResponse.json({ error: 'Session name (e.g., 2025/2026) is required' }, { status: 400 });
+    if (!name && !id) {
+      return NextResponse.json({ error: 'Session name or id is required' }, { status: 400 });
     }
 
-    // Check duplicate
-    let session = await db.session.findUnique({ where: { name } });
+    // Find session by id or name
+    let session = id 
+      ? await db.session.findUnique({ where: { id } })
+      : (name ? await db.session.findUnique({ where: { name } }) : null);
 
     if (session) {
       if (active) {

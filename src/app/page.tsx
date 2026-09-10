@@ -62,7 +62,7 @@ export default function Home() {
                 <div className="flex items-center justify-between border-b border-border-custom pb-4 mb-6">
                   <div className="flex items-center space-x-2">
                     <div 
-                      className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center"
+                      className="w-8 h-8 flex items-center justify-center flex-shrink-0"
                       dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
                     />
                     <span className="font-bold text-xs tracking-wider">SGGS Portal</span>

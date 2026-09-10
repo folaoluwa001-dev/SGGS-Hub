@@ -24,6 +24,7 @@ interface StudentInfo {
 }
 
 interface TermSessionInfo {
+  id?: string;
   name: string;
 }
 
@@ -42,7 +43,11 @@ export default function ResultChecker() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.studentId || !formData.tokenString || !formData.visitorName) {
+    const cleanStudentId = formData.studentId.trim();
+    const cleanTokenString = formData.tokenString.trim().toUpperCase();
+    const cleanVisitorName = formData.visitorName.trim();
+
+    if (!cleanStudentId || !cleanTokenString || !cleanVisitorName) {
       setError('All fields are required.');
       return;
     }
@@ -55,7 +60,11 @@ export default function ResultChecker() {
       const response = await fetch('/api/public/check-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          studentId: cleanStudentId,
+          tokenString: cleanTokenString,
+          visitorName: cleanVisitorName,
+        }),
       });
 
       const data = await response.json();
@@ -74,7 +83,12 @@ export default function ResultChecker() {
 
   const handleDownloadPDF = () => {
     if (!reportData) return;
-    const url = `/api/results/pdf?studentId=${formData.studentId}&token=${formData.tokenString}&visitorName=${encodeURIComponent(formData.visitorName)}&termId=${reportData.results[0] ? '' : ''}&sessionId=${reportData.results[0] ? '' : ''}`;
+    const targetStudentId = reportData.student?.id || formData.studentId.trim();
+    const tokenStr = formData.tokenString.trim().toUpperCase();
+    const visitorStr = encodeURIComponent(formData.visitorName.trim() || 'Public Viewer');
+    const termIdParam = reportData.term?.id || '';
+    const sessionIdParam = reportData.session?.id || '';
+    const url = `/api/results/pdf?studentId=${encodeURIComponent(targetStudentId)}&token=${encodeURIComponent(tokenStr)}&visitorName=${visitorStr}${termIdParam ? `&termId=${encodeURIComponent(termIdParam)}` : ''}${sessionIdParam ? `&sessionId=${encodeURIComponent(sessionIdParam)}` : ''}`;
     window.open(url, '_blank');
   };
 
@@ -216,7 +230,7 @@ export default function ResultChecker() {
               <div className="flex items-center justify-between border-b-2 border-secondary pb-6">
                 <div className="flex items-center space-x-4">
                   <div 
-                    className="w-14 h-14 flex items-center justify-center rounded-2xl bg-primary text-white"
+                    className="w-16 h-16 flex items-center justify-center flex-shrink-0"
                     dangerouslySetInnerHTML={{ __html: schoolConfig.schoolLogo }}
                   />
                   <div>

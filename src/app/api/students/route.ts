@@ -45,14 +45,15 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || '';
     const classId = searchParams.get('classId') || '';
     const sessionId = searchParams.get('sessionId') || '';
+    const statusFilter = searchParams.get('status') || '';
 
     const whereClause: any = {};
 
     if (search) {
       whereClause.OR = [
-        { fullName: { contains: search } },
-        { id: { contains: search } },
-        { admissionNumber: { contains: search } },
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { id: { contains: search, mode: 'insensitive' } },
+        { admissionNumber: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -62,6 +63,22 @@ export async function GET(request: Request) {
 
     if (sessionId) {
       whereClause.sessionId = sessionId;
+    }
+
+    if (statusFilter === 'graduated') {
+      whereClause.class = {
+        ...(whereClause.class || {}),
+        OR: [
+          { level: 'GRADUATED' },
+          { name: { startsWith: 'Graduating Class' } },
+        ],
+      };
+    } else if (statusFilter === 'active') {
+      whereClause.class = {
+        ...(whereClause.class || {}),
+        level: { not: 'GRADUATED' },
+        NOT: { name: { startsWith: 'Graduating Class' } },
+      };
     }
 
     const students = await db.student.findMany({
