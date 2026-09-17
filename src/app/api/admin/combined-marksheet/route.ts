@@ -64,17 +64,89 @@ export async function GET(request: Request) {
 
     const classIds = matchedClasses.map(c => c.id);
 
-    // Fetch all students in the matched classes for the selected session
-    const students = await db.student.findMany({
+    const PROMOTION_ORDER = ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'];
+    const targetSessionYear = parseInt(sessionName.split('/')[0] || '0', 10);
+
+    // Find candidate students from attendance and results for this session & term
+    const candidateAttendance = await db.attendance.findMany({
       where: {
         classId: { in: classIds },
-        sessionId: targetSessionId
+        sessionId: targetSessionId,
+        termId: targetTermId,
       },
-      select: {
-        id: true,
-        fullName: true,
-        gender: true
+      select: { studentId: true },
+    });
+
+    const candidateResults = await db.result.findMany({
+      where: {
+        sessionId: targetSessionId,
+        termId: targetTermId,
+      },
+      select: { studentId: true },
+      distinct: ['studentId'],
+    });
+
+    const candidateIds = new Set<string>();
+    candidateAttendance.forEach((a) => candidateIds.add(a.studentId));
+    candidateResults.forEach((r) => candidateIds.add(r.studentId));
+
+    // Also include directly enrolled students in this session
+    const directlyEnrolledStudents = await db.student.findMany({
+      where: {
+        classId: { in: classIds },
+        sessionId: targetSessionId,
+      },
+      select: { id: true },
+    });
+    directlyEnrolledStudents.forEach((s) => candidateIds.add(s.id));
+
+    // Fetch all candidate students
+    const allCandidates = await db.student.findMany({
+      where: { id: { in: Array.from(candidateIds) } },
+      include: {
+        class: true,
+        session: true,
+      },
+      orderBy: { fullName: 'asc' },
+    });
+
+    // Attendance map for fast lookup
+    const attRecords = await db.attendance.findMany({
+      where: {
+        sessionId: targetSessionId,
+        termId: targetTermId,
+      },
+      select: { studentId: true, classId: true },
+    });
+    const attMap = new Map<string, string>();
+    attRecords.forEach((a) => attMap.set(a.studentId, a.classId));
+
+    const matchedClassNames = new Set(matchedClasses.map(c => c.name.toUpperCase()));
+
+    const students = allCandidates.filter((student) => {
+      // 1. Attendance exact class match
+      if (attMap.has(student.id)) {
+        return classIds.includes(attMap.get(student.id)!);
       }
+      // 2. Direct session & class match
+      if (student.sessionId === targetSessionId && classIds.includes(student.classId)) {
+        return true;
+      }
+      // 3. Promotion ladder calculation
+      const studentSessionYear = parseInt(student.session?.name?.split('/')[0] || '0', 10);
+      const currentClassName = student.class?.name || '';
+      if (currentClassName.startsWith('Graduating Students of') && currentClassName.includes(sessionName)) {
+        return matchedClassNames.has('SSS3');
+      }
+      if (studentSessionYear > 0 && targetSessionYear > 0 && studentSessionYear > targetSessionYear) {
+        const yearDiff = studentSessionYear - targetSessionYear;
+        const currentIndex = PROMOTION_ORDER.indexOf(currentClassName);
+        if (currentIndex !== -1 && currentIndex - yearDiff >= 0) {
+          const pastClass = PROMOTION_ORDER[currentIndex - yearDiff];
+          return matchedClassNames.has(pastClass.toUpperCase());
+        }
+      }
+      return classIds.includes(student.classId);
     });
 
     if (students.length === 0) {

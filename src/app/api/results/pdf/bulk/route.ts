@@ -30,26 +30,91 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Class, Term, or Session not found' }, { status: 404 });
     }
 
-    // 3. Fetch students in the target class
-    const students = await db.student.findMany({
-      where: { classId },
+    // 3. Find students who attended or had results for this class in this session & term
+    const PROMOTION_ORDER = ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'];
+    const targetSessionYear = parseInt(sessionRecord.name.split('/')[0] || '0', 10);
+
+    // (a) Find candidate students who have attendance or results for this session & term
+    const candidateResults = await db.result.findMany({
+      where: {
+        sessionId: sessionRecord.id,
+        termId: termRecord.id,
+      },
+      select: { studentId: true },
+      distinct: ['studentId'],
+    });
+
+    const candidateAttendance = await db.attendance.findMany({
+      where: {
+        sessionId: sessionRecord.id,
+        termId: termRecord.id,
+      },
+      select: { studentId: true, classId: true },
+    });
+
+    const attClassMap = new Map<string, string>();
+    candidateAttendance.forEach((a) => attClassMap.set(a.studentId, a.classId));
+
+    const candidateIds = new Set<string>();
+    candidateResults.forEach((r) => candidateIds.add(r.studentId));
+    candidateAttendance.forEach((a) => candidateIds.add(a.studentId));
+
+    // Also include students currently assigned to this class and session
+    const currentStudents = await db.student.findMany({
+      where: { classId: classRecord.id },
+      select: { id: true, sessionId: true },
+    });
+    currentStudents.forEach((s) => {
+      if (s.sessionId === sessionRecord.id) {
+        candidateIds.add(s.id);
+      }
+    });
+
+    // Fetch student records
+    const allCandidateStudents = await db.student.findMany({
+      where: { id: { in: Array.from(candidateIds) } },
       include: {
         class: true,
-        session: true
+        session: true,
       },
-      orderBy: { fullName: 'asc' }
+      orderBy: { fullName: 'asc' },
+    });
+
+    // Filter students whose resolved class for this session matches target classRecord
+    const students = allCandidateStudents.filter((student) => {
+      // 1. Exact attendance class match
+      if (attClassMap.has(student.id)) {
+        return attClassMap.get(student.id) === classRecord.id;
+      }
+      // 2. Same session match
+      if (student.sessionId === sessionRecord.id && student.classId === classRecord.id) {
+        return true;
+      }
+      // 3. Promotion ladder check
+      const studentSessionYear = parseInt(student.session?.name?.split('/')[0] || '0', 10);
+      const currentClassName = student.class?.name || '';
+      if (currentClassName.startsWith('Graduating Students of') && currentClassName.includes(sessionRecord.name)) {
+        return classRecord.name === 'SSS3';
+      }
+      if (studentSessionYear > 0 && targetSessionYear > 0 && studentSessionYear > targetSessionYear) {
+        const yearDiff = studentSessionYear - targetSessionYear;
+        const currentIndex = PROMOTION_ORDER.indexOf(currentClassName);
+        if (currentIndex !== -1 && currentIndex - yearDiff >= 0) {
+          return PROMOTION_ORDER[currentIndex - yearDiff] === classRecord.name;
+        }
+      }
+      return student.classId === classRecord.id;
     });
 
     if (students.length === 0) {
-      return NextResponse.json({ error: 'No students registered in this class' }, { status: 400 });
+      return NextResponse.json({ error: `No student records found for ${classRecord.name} in ${sessionRecord.name} (${termRecord.name}).` }, { status: 400 });
     }
 
     // Pre-fetch attendance records for all class students in this term & session
     const attendanceRecords = await db.attendance.findMany({
       where: {
-        classId: classRecord.id,
-        termId: termRecord.id,
         sessionId: sessionRecord.id,
+        termId: termRecord.id,
       },
     });
     const attendanceMap = new Map<string, number>();
@@ -74,13 +139,13 @@ export async function GET(request: Request) {
         }
       });
 
-      // Format for PDF service
+      // Format for PDF service - use classRecord.name to ensure correct session class
       const formattedStudent = {
         id: student.id,
         admissionNumber: student.admissionNumber,
         fullName: student.fullName,
         gender: student.gender,
-        class: student.class.name,
+        class: classRecord.name,
         session: sessionRecord.name,
         term: termRecord.name,
         parentName: student.parentName

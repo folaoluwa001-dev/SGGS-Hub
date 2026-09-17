@@ -11,7 +11,7 @@ import {
   Plus, Edit, Trash2, Search, Filter, ShieldAlert, ShieldCheck, Download, RefreshCcw,
   Save, KeyRound, Calendar, Lock,
   PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight,
-  GraduationCap, Sliders, ArrowRight, CheckCircle2, AlertTriangle, Clock, CalendarDays, Check, Sparkles
+  GraduationCap, Sliders, ArrowRight, CheckCircle2, AlertTriangle, Clock, CalendarDays, Check, Sparkles, FolderArchive
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
 import {
@@ -25,7 +25,7 @@ export default function AdminDashboard() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet' | 'session-settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet' | 'session-settings' | 'previous-sessions'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -57,6 +57,16 @@ export default function AdminDashboard() {
   const [marksheetError, setMarksheetError] = useState<string | null>(null);
   const [marksheetSuccess, setMarksheetSuccess] = useState<string | null>(null);
   const [marksheetUploadErrors, setMarksheetUploadErrors] = useState<string[]>([]);
+
+  // Previous Sessions Reports state
+  const [prevSessionId, setPrevSessionId] = useState('');
+  const [prevTermId, setPrevTermId] = useState('');
+  const [prevClassId, setPrevClassId] = useState('');
+  const [prevSearch, setPrevSearch] = useState('');
+  const [prevStudents, setPrevStudents] = useState<any[]>([]);
+  const [prevLoading, setPrevLoading] = useState(false);
+  const [prevError, setPrevError] = useState<string | null>(null);
+  const [prevBulkLoading, setPrevBulkLoading] = useState(false);
 
   // Modals state
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -243,8 +253,10 @@ export default function AdminDashboard() {
       const activeTerm = resTerms.find((t: any) => t.active);
       if (activeTerm) {
         setSelectedMarksheetTermId(activeTerm.id);
+        setPrevTermId(activeTerm.id);
       } else if (resTerms.length > 0) {
         setSelectedMarksheetTermId(resTerms[0].id);
+        setPrevTermId(resTerms[0].id);
       }
 
       const activeSession = resSess.find((s: any) => s.active);
@@ -252,6 +264,16 @@ export default function AdminDashboard() {
         setSelectedMarksheetSessionId(activeSession.id);
       } else if (resSess.length > 0) {
         setSelectedMarksheetSessionId(resSess[0].id);
+      }
+
+      // Default previous session to a past session if available, else active
+      const pastSessions = resSess.filter((s: any) => !s.active);
+      if (pastSessions.length > 0) {
+        setPrevSessionId(pastSessions[0].id);
+      } else if (activeSession) {
+        setPrevSessionId(activeSession.id);
+      } else if (resSess.length > 0) {
+        setPrevSessionId(resSess[0].id);
       }
     } catch (e) {
       console.error(e);
@@ -420,6 +442,79 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch previous sessions reports
+  const fetchPreviousSessionReports = async () => {
+    if (!prevSessionId || !prevTermId) return;
+    setPrevLoading(true);
+    setPrevError(null);
+    try {
+      const params = new URLSearchParams({
+        sessionId: prevSessionId,
+        termId: prevTermId,
+      });
+      if (prevClassId) params.set('classId', prevClassId);
+      if (prevSearch.trim()) params.set('search', prevSearch.trim());
+
+      const res = await fetch(`/api/admin/previous-sessions/reports?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch previous session report records.');
+      }
+      setPrevStudents(data.students || []);
+    } catch (err: any) {
+      setPrevError(err.message || 'Error loading report records.');
+    } finally {
+      setPrevLoading(false);
+    }
+  };
+
+  const handlePrevBulkDownload = async () => {
+    if (!prevSessionId || !prevTermId || !prevClassId) {
+      alert('Please select an Academic Session, Term, and Class arm for bulk report download.');
+      return;
+    }
+
+    setPrevBulkLoading(true);
+    try {
+      const url = `/api/results/pdf/bulk?classId=${prevClassId}&termId=${prevTermId}&sessionId=${prevSessionId}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to generate bulk report cards ZIP.');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+
+      const selectedClass = classes.find(c => c.id === prevClassId);
+      const className = selectedClass ? selectedClass.name : 'Class';
+      const selectedSession = sessions.find(s => s.id === prevSessionId);
+      const sessionName = selectedSession ? selectedSession.name.replace(/\//g, '-') : 'Session';
+      const selectedTerm = terms.find(t => t.id === prevTermId);
+
+      let termLabel = 'Term';
+      if (selectedTerm) {
+        termLabel = selectedTerm.name.replace(/\s+/g, '');
+        if (selectedTerm.name.toLowerCase().includes('first')) termLabel = 'Term1';
+        else if (selectedTerm.name.toLowerCase().includes('second')) termLabel = 'Term2';
+        else if (selectedTerm.name.toLowerCase().includes('third')) termLabel = 'Term3';
+      }
+
+      link.setAttribute('download', `${className}_Report_Cards_${sessionName}_${termLabel}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      alert(err.message || 'An error occurred while downloading bulk report cards.');
+    } finally {
+      setPrevBulkLoading(false);
+    }
+  };
+
   // Fetch contextual tab data
   useEffect(() => {
     if (!user) return;
@@ -443,9 +538,21 @@ export default function AdminDashboard() {
       fetchSessions();
       fetchTerms();
       fetchStudents();
+    } else if (activeTab === 'previous-sessions') {
+      fetchSessions();
+      fetchTerms();
+      fetchClasses();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, user, studentClassFilter, studentSearch, studentStatusFilter, auditSearch, auditActionFilter]);
+
+  // Trigger previous session reports fetch when filters change
+  useEffect(() => {
+    if (activeTab === 'previous-sessions' && prevSessionId && prevTermId) {
+      fetchPreviousSessionReports();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, prevSessionId, prevTermId, prevClassId, prevSearch]);
 
   // Report Card Downloads
   const handleDownloadStudentReportCard = (student: any) => {
@@ -1062,6 +1169,17 @@ export default function AdminDashboard() {
                 </button>
 
                 <button
+                  onClick={() => { setActiveTab('previous-sessions'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'previous-sessions'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                    }`}
+                >
+                  <FolderArchive className="w-4 h-4 flex-shrink-0" />
+                  <span>Previous Sessions</span>
+                </button>
+
+                <button
                   onClick={() => { setActiveTab('audit'); setMobileMenuOpen(false); }}
                   className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'audit'
                       ? 'bg-secondary/15 text-secondary'
@@ -1222,6 +1340,18 @@ export default function AdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('previous-sessions')}
+              title={sidebarCollapsed ? 'Previous Sessions' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'previous-sessions'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                }`}
+            >
+              <FolderArchive className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Previous Sessions</span>}
+            </button>
+
+            <button
               onClick={() => setActiveTab('audit')}
               title={sidebarCollapsed ? 'Audit Trail' : undefined}
               className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'audit'
@@ -1311,6 +1441,7 @@ export default function AdminDashboard() {
               {activeTab === 'backups' && 'Database Backup Control'}
               {activeTab === 'marksheet' && 'Combined Marksheet Control'}
               {activeTab === 'session-settings' && 'Academic Session & Resumption Settings'}
+              {activeTab === 'previous-sessions' && 'Previous Sessions & Report Sheets Archive'}
               {activeTab === 'audit' && 'Security Audit Logs'}
               {activeTab === 'settings' && 'Account Settings'}
             </h2>
@@ -3190,6 +3321,259 @@ export default function AdminDashboard() {
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* PREVIOUS SESSIONS & REPORT SHEETS ARCHIVE TAB */}
+      {activeTab === 'previous-sessions' && (() => {
+        return (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Header Card */}
+            <div className="p-6 rounded-3xl bg-card-custom border border-border-custom shadow-sm space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <FolderArchive className="w-5 h-5 text-secondary" />
+                    <h3 className="text-base font-black text-primary dark:text-white uppercase tracking-tight">Previous Sessions Report Sheets</h3>
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-bold uppercase mt-1">
+                    Access and download verified report cards and marksheets for previous academic sessions. Original class names and marks are strictly preserved.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={fetchPreviousSessionReports}
+                    disabled={prevLoading}
+                    className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-bg-custom border border-border-custom hover:border-secondary text-primary dark:text-white text-xs font-bold transition-all"
+                    title="Refresh report records"
+                  >
+                    <RefreshCcw className={`w-3.5 h-3.5 ${prevLoading ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
+                  </button>
+
+                  <button
+                    onClick={handlePrevBulkDownload}
+                    disabled={prevBulkLoading || !prevClassId}
+                    className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-secondary text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-extrabold shadow-md transition-all"
+                    title={!prevClassId ? 'Select a Class Arm to enable bulk download' : 'Download ZIP of all report cards for selected class and session'}
+                  >
+                    {prevBulkLoading ? (
+                      <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{prevBulkLoading ? 'Generating ZIP...' : 'Bulk Download Class ZIP'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter Controls Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-bg-custom/50 border border-border-custom">
+                {/* Session Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-400 flex items-center space-x-1">
+                    <CalendarDays className="w-3.5 h-3.5 text-secondary" />
+                    <span>Academic Session</span>
+                  </label>
+                  <select
+                    value={prevSessionId}
+                    onChange={(e) => setPrevSessionId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-card-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:border-secondary transition-colors"
+                  >
+                    <option value="">Select Session...</option>
+                    {sessions.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} {s.active ? '(Active)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Term Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-400 flex items-center space-x-1">
+                    <Clock className="w-3.5 h-3.5 text-secondary" />
+                    <span>Term</span>
+                  </label>
+                  <select
+                    value={prevTermId}
+                    onChange={(e) => setPrevTermId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-card-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:border-secondary transition-colors"
+                  >
+                    <option value="">Select Term...</option>
+                    {terms.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} {t.active ? '(Active)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Class Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-400 flex items-center space-x-1">
+                    <Users className="w-3.5 h-3.5 text-secondary" />
+                    <span>Class Arm</span>
+                  </label>
+                  <select
+                    value={prevClassId}
+                    onChange={(e) => setPrevClassId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-card-custom border border-border-custom text-xs font-bold focus:outline-hidden focus:border-secondary transition-colors"
+                  >
+                    <option value="">All Classes</option>
+                    {classes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Search Input */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-400 flex items-center space-x-1">
+                    <Search className="w-3.5 h-3.5 text-secondary" />
+                    <span>Search Student</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Name or ID / Admission No..."
+                      value={prevSearch}
+                      onChange={(e) => setPrevSearch(e.target.value)}
+                      className="w-full px-3 py-2 pr-8 rounded-xl bg-card-custom border border-border-custom text-xs font-bold placeholder:text-slate-400 focus:outline-hidden focus:border-secondary transition-colors"
+                    />
+                    {prevSearch && (
+                      <button
+                        onClick={() => setPrevSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {prevError && (
+                <div className="p-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger text-xs font-bold flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{prevError}</span>
+                </div>
+              )}
+
+              {/* Summary Bar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-1 text-xs">
+                <div className="flex items-center space-x-2 text-slate-400 font-bold">
+                  <span>Total Records Found:</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-black">
+                    {prevStudents.length}
+                  </span>
+                </div>
+                {prevClassId && (
+                  <p className="text-[11px] text-slate-400 font-semibold">
+                    Ready to download bulk bundle for <span className="font-extrabold text-primary dark:text-white">{classes.find(c => c.id === prevClassId)?.name}</span>.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Students Report Sheets Table */}
+            <div className="bg-card-custom border border-border-custom rounded-2xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-muted-custom/30 text-muted-fg-custom border-b border-border-custom">
+                      <th className="p-4 font-bold">Student ID</th>
+                      <th className="p-4 font-bold">Admission No</th>
+                      <th className="p-4 font-bold">Full Name</th>
+                      <th className="p-4 font-bold">Session Class</th>
+                      <th className="p-4 font-bold">Promotion Status</th>
+                      <th className="p-4 font-bold text-center">Subjects</th>
+                      <th className="p-4 font-bold text-center">Average</th>
+                      <th className="p-4 font-bold text-center">Attendance</th>
+                      <th className="p-4 font-bold text-center">Report Sheet</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-custom">
+                    {prevLoading ? (
+                      <tr>
+                        <td colSpan={9} className="p-12 text-center text-slate-400 font-bold">
+                          <RefreshCcw className="w-6 h-6 animate-spin mx-auto mb-2 text-secondary" />
+                          Loading student report sheets for selected session and term...
+                        </td>
+                      </tr>
+                    ) : prevStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-12 text-center text-slate-400 font-bold">
+                          No student report sheet records found for the selected session, term, and filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      prevStudents.map((st) => (
+                        <tr key={st.id} className="hover:bg-muted-custom/10 transition-colors">
+                          <td className="p-4 font-bold font-mono select-all text-primary dark:text-white">
+                            {st.id}
+                          </td>
+                          <td className="p-4 font-semibold font-mono select-all text-slate-500">
+                            {st.admissionNumber}
+                          </td>
+                          <td className="p-4 font-black uppercase text-primary dark:text-slate-300">
+                            {st.fullName}
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-primary/10 text-primary dark:text-white border border-primary/20">
+                              {st.historicalClass}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            {st.isPromoted ? (
+                              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <Sparkles className="w-3 h-3" />
+                                <span>Promoted to {st.currentClass}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-bold text-slate-400">
+                                Current: {st.currentClass}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 text-center font-bold">
+                            {st.subjectCount > 0 ? (
+                              <span className="px-2 py-0.5 rounded-md bg-muted-custom font-extrabold text-xs">
+                                {st.subjectCount} subjects
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-xs">No entries</span>
+                            )}
+                          </td>
+                          <td className="p-4 text-center font-black text-secondary">
+                            {st.subjectCount > 0 ? `${st.averageScore}%` : '-'}
+                          </td>
+                          <td className="p-4 text-center font-bold text-slate-500">
+                            {st.attendance}
+                          </td>
+                          <td className="p-4 text-center">
+                            <a
+                              href={`/api/results/pdf?studentId=${st.id}&sessionId=${prevSessionId}&termId=${prevTermId}${prevClassId ? `&classId=${prevClassId}` : ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs transition-colors border border-emerald-500/20"
+                              title={`Download ${st.historicalClass} Report Card PDF for ${st.fullName}`}
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download PDF</span>
+                            </a>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
