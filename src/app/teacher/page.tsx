@@ -9,9 +9,10 @@ import {
   Users, BookOpen, FileSpreadsheet, RefreshCw, LogOut,
   Download, Upload, Save, CheckCircle2, ShieldAlert, Search, AlertCircle, Lock,
   PanelLeftClose, PanelLeftOpen, Menu, X, ChevronLeft, ChevronRight,
-  CalendarCheck, Check, Sparkles, Sliders, Calendar
+  CalendarCheck, Check, Sparkles, Sliders, Calendar, GraduationCap
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
+import EntranceExamCoordinator from '@/components/teacher/EntranceExamCoordinator';
 
 export default function TeacherDashboard() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function TeacherDashboard() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'manual' | 'sync' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'manual' | 'sync' | 'entrance-exams' | 'settings'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -547,6 +548,18 @@ export default function TeacherDashboard() {
                 </button>
 
                 <button
+                  onClick={() => { setActiveTab('entrance-exams'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'entrance-exams'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                  }`}
+                >
+                  <GraduationCap className="w-4 h-4 flex-shrink-0" />
+                  <span>Entrance Exams</span>
+                </button>
+
+                <button
                   onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
                   className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                     activeTab === 'settings'
@@ -666,6 +679,19 @@ export default function TeacherDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('entrance-exams')}
+              title={sidebarCollapsed ? 'Entrance Exams' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'entrance-exams'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Entrance Exams</span>}
+            </button>
+
+            <button
               onClick={() => setActiveTab('settings')}
               title={sidebarCollapsed ? 'Change Password' : undefined}
               className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-3 rounded-xl text-xs font-bold transition-all ${
@@ -741,6 +767,7 @@ export default function TeacherDashboard() {
               {activeTab === 'attendance' && 'Student Attendance Recording'}
               {activeTab === 'sync' && 'Spreadsheet Grade Upload & Sync'}
               {activeTab === 'manual' && 'Manual Grade Book Overrides'}
+              {activeTab === 'entrance-exams' && 'Entrance Exam Coordination & Questions'}
               {activeTab === 'settings' && 'Account Settings'}
             </h2>
           </div>
@@ -1414,6 +1441,13 @@ export default function TeacherDashboard() {
               </div>
             );
           })()}
+
+          {/* ENTRANCE EXAMS COORDINATION TAB */}
+          {activeTab === 'entrance-exams' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <EntranceExamCoordinator />
+            </div>
+          )}
 
           {/* MANUAL SCORE SHEET TAB */}
           {activeTab === 'manual' && (

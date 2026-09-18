@@ -294,3 +294,17 @@ model Application {
   @@map("applications")
 }
 
+model EntranceQuestion {
+  id            String   @id @default(uuid())
+  subject       String   // Mathematics, English Language, General Science, etc.
+  question      String   @db.Text
+  options       String   // JSON stringified array of 4 options
+  correctAnswer Int      // Index 0, 1, 2, or 3
+  explanation   String?  @db.Text
+  targetLevel   String   @default("ALL") // ALL, JUNIOR, SENIOR
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("entrance_questions")
+}
+

@@ -29,8 +29,23 @@ function ExamContent() {
   const [submitting, setSubmitting] = useState(false);
   const [examFinished, setExamFinished] = useState(false);
   const [resultScore, setResultScore] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<ExamQuestion[]>(juniorEntranceQuestions);
 
-  const questions: ExamQuestion[] = juniorEntranceQuestions;
+  // Load questions dynamically from question bank set by teachers
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch('/api/admissions/questions');
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setQuestions(data);
+        }
+      } catch (err) {
+        console.error('Using default offline questions');
+      }
+    };
+    fetchQuestions();
+  }, []);
 
   // Fetch applicant data on mount if ref exists
   useEffect(() => {
