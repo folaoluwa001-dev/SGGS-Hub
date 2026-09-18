@@ -14,6 +14,7 @@ import {
   GraduationCap, Sliders, ArrowRight, CheckCircle2, AlertTriangle, Clock, CalendarDays, Check, Sparkles, FolderArchive
 } from 'lucide-react';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
+import AdmissionsManager from '@/components/admin/AdmissionsManager';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, PieChart, Pie, Cell
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet' | 'session-settings' | 'previous-sessions'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'admissions' | 'subjects' | 'tokens' | 'backups' | 'audit' | 'settings' | 'marksheet' | 'session-settings' | 'previous-sessions'>('overview');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -438,6 +439,13 @@ export default function AdminDashboard() {
     Promise.resolve().then(() => {
       setUser(parsed);
       fetchBaseData();
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        if (tabParam === 'admissions') {
+          setActiveTab('admissions');
+        }
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1114,6 +1122,17 @@ export default function AdminDashboard() {
                 </button>
 
                 <button
+                  onClick={() => { setActiveTab('admissions'); setMobileMenuOpen(false); }}
+                  className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'admissions'
+                      ? 'bg-secondary/15 text-secondary'
+                      : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                    }`}
+                >
+                  <GraduationCap className="w-4 h-4 flex-shrink-0" />
+                  <span>Admissions</span>
+                </button>
+
+                <button
                   onClick={() => { setActiveTab('subjects'); setMobileMenuOpen(false); }}
                   className={`flex items-center space-x-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'subjects'
                       ? 'bg-secondary/15 text-secondary'
@@ -1280,6 +1299,18 @@ export default function AdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('admissions')}
+              title={sidebarCollapsed ? 'Admissions Management' : undefined}
+              className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'admissions'
+                  ? 'bg-secondary/15 text-secondary'
+                  : 'text-muted-fg-custom hover:bg-muted-custom hover:text-fg-custom'
+                }`}
+            >
+              <GraduationCap className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>Admissions</span>}
+            </button>
+
+            <button
               onClick={() => setActiveTab('subjects')}
               title={sidebarCollapsed ? 'Manage Subjects' : undefined}
               className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} w-full py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'subjects'
@@ -1436,6 +1467,7 @@ export default function AdminDashboard() {
             <h2 className="text-sm font-black text-primary dark:text-white uppercase hidden sm:block">
               {activeTab === 'overview' && 'Overview Analytics'}
               {activeTab === 'students' && 'Student Records CRUD'}
+              {activeTab === 'admissions' && 'Admissions Management'}
               {activeTab === 'subjects' && 'Academic Subjects'}
               {activeTab === 'tokens' && 'Result Checker Tokens'}
               {activeTab === 'backups' && 'Database Backup Control'}
@@ -1575,6 +1607,13 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ADMISSIONS MANAGEMENT TAB */}
+          {activeTab === 'admissions' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <AdmissionsManager />
             </div>
           )}
 
